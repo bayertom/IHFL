@@ -2330,7 +2330,7 @@ int main(int argc, char* argv[])
 					}
 
 
-					//Non-uniform version of IFL
+					//Export results to dxf
 					case 'e':
 					{
 						export_dxf = true;

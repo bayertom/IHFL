@@ -136,5 +136,20 @@ Otherwise, no statistic is computed.
 
 This option significantly reduces the performance of clustering! 
 
+1.3.3 Exporting clusters to DXF
+The resulted facilities and connected clients can be exported into DXF file using the switch "e".
+
+	-e
+
+
+Example: non-uniform clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
+and maximum radius of 50 cm. The point cloud is partitioned into subsets with the maximum size of 100 000 points, the normal
+vector is estimated from 30 k-nearest neighbors, the isotropic factor is set to 0.95, the resulted clusters are exported into DXF file.
+
+	ihfl test.txt +norm=dfp +met=ihfl +f=0.02 +lam=0.5 +ns=100000 +knn=30 +mju=0.95 -n -e
+
+This option significantly reduces the performance of clustering! 
+
+
 1.4 Results of the clusterization
 The output facilities as well as the output statistics are stored into *.txt files. They can easily be imported into external SW tool, for example the Cloud Compare.
