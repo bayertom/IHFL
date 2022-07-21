@@ -23,15 +23,15 @@ int main(int argc, char* argv[])
 	//Testing data
 	//std::string file_name = "data\\eth_mid.txt";
 	//std::string file_name = "data\\test_pseudometrics.txt";
-	//std::string file_name = "data2\\eth_mid.txt";
+	std::string file_name = "data\\eth_mid.txt";
 	//std::string file_name = "data2\\test_pseudometrics.txt";
 
 	//Parameters of the clusterization algorithm
-	bool statistics = true, rec_costs = true, export_dxf = true;
+	bool rec_costs = false, export_dxf = false;
 	int knn = 50, ns = 100000, l = 1;
 	double fc = 0.01, lambda = 0.25, mju = 0.95;
 	pfnorm fnorm = &IHFL::nDFP;
-	std::string file_name, fnorm_text = "dfp", method_text = "ihfl";
+	std::string /* file_name,*/ fnorm_text = "dfp", method_text = "ihfl";
 
 	//Process command line parameters
 	while (--argc > 0)
