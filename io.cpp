@@ -75,7 +75,7 @@ void IO::savePointCloud(const std::string& file_name, const TVector <Point3D>& U
 		file << std::fixed;
 
 		//Process all points
-		for (auto point : U)
+		for (const auto &point : U)
 		{
 			//Write coordinates
 			file << std::setprecision(8);
