@@ -79,14 +79,13 @@ Example: Clusterization according to the ABN pseudonorm
 
 ![ABN](./data/Cone/clusters_abn.jpg)
 	
-1.3.2 Setting the pseudonorm threshold
+1.3.2 Setting the Facility cost
 
-User-defined pseudonorm threshold refering to the maximum surface complexity (a maximum acceptable notch or protrusion) 
-can be set using the parameter "f"
+User-defined facility cost can be set using the parameter "fc"
 
 	+fc=val
 
-Typical value used for point clouds acquired by ALS is 1-5cm.
+In our paper, fc refers to the maximum surface complexity (a maximum acceptable notch or protrusion). A typical value used for point clouds acquired by ALS is 1-5cm.
 
 Example: Clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
 
