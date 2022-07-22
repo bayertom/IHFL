@@ -92,6 +92,7 @@ Example: Clusterization according to dfp pseudonorm using IHFL algorithm with th
 	ihfl "test.txt" +norm=dfp +fc=0.02
 
 1.2.4 Setting the maximum ball radius
+
 User-defined maximum value of the ball radius lambda can be set using the parameter "ball". This value represents the maximum
 radius of the cluster.
 
@@ -105,6 +106,7 @@ and maximum ball radius of 50 cm
 	ihfl "test.txt" +norm=dfp +fc=0.02 +lambda=0.5
 
 1.2.5 Setting the subset size
+
 The input datasets can be recursively partitioned into subsets using kD-tree. The maximum amount points per a subset can be set
 using the parameter "ns"
 
@@ -118,6 +120,7 @@ and maximum ball radius of 50 cm. The point cloud is partitioned into subsets wi
 	ihfl "test.txt" +norm=dfp +fc=0.02 +lambda=0.5 +ns=100000
 
 1.2.6 Setting the subset size
+
 User-defined value of the k-nearest neighbors used for the estimation of the normal using PCA can be set using the parameter "knn"
 
 	+knn=value
@@ -131,6 +134,7 @@ vector is estimated from 30 k-nearest neighbors.
 	ihfl "test.txt" +norm=dfp +fc=0.02 +lambda=0.5 +ns=100000 +knn=30
 
 1.2.7 Setting the isotropic ratio
+
 User defined isotropic factor mju, mju in (0,1), regulating the influence of the L2 metric and pseudometric.  Important parameter of 
 the clusterization, significantly affects the behavior of the clusterization process: mju=0 -> L2 metric (fully isotropic), 
 mju=1 ->pseudometric (fully anisotropic)
@@ -148,6 +152,7 @@ vector is estimated from 30 k-nearest neighbors, the isotropic factor is set to 
 1.3 List of switches
 
 1.3.1 Recompute values of facility costs
+
 The costs of input points can be recomputed according to the ehavior of normal vectors using the switch "n"
 
 	-n 	
@@ -160,7 +165,8 @@ vector is estimated from 30 k-nearest neighbors, the isotropic factor is set to 
 
 	ihfl test.txt +norm=dfp +fc=0.02 +lambda=0.5 +ns=100000 +knn=30 +mju=0.95 -n
 
-1.3.3 Exporting clusters to DXF
+1.3.2 Exporting clusters to DXF
+
 The resulted facilities and connected clients can be exported into DXF file using the switch "e".
 
 	-e
