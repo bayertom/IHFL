@@ -4,11 +4,13 @@ Facility location clustering of the point cloud according to the hybrid constrai
 
 
 1.1. Running the software
+
 Open the command prompt and use the following combination of parameters, their value and options: 
 
 ihfl file_name +parameter1=value1 +parameter2=value2 -option1 -option2
 
 1.1 Input file
+
 The input txt file contains the Cartesian coordinates X, Y, Z of points of the input point cloud. Each item is separated by space or TAB:
 
 
@@ -53,6 +55,7 @@ can be combined with the facility costs:
 1.2 List of parameters
 
 1.2.1 Setting the pseudonorm
+
 The pseudonorm can be set using the parameter "norm"
 
 +norm=val
