@@ -67,7 +67,7 @@ Example: Clusterization according to the dfp pseudonorm
 
 	ihfl "test.txt" +norm=dfp
 
-![ABN](Data/Cone/clusters_abn.jpg)
+![ABN](/Data/Cone/clusters_abn.jpg)
 	
 1.2.3 Setting the pseudonorm threshold
 User-defined pseudonorm threshold refering to the maximum surface complexity (a maximum acceptable notch or protrusion) 
