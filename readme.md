@@ -115,6 +115,8 @@ using the parameter "ns"
 
 Typical size of the subset used for point clouds acquired by ALS is 100000.
 
+![Various values of mju](./data/progress.jpg)
+
 Example: Clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
 and maximum ball radius of 50 cm. The point cloud is partitioned into subsets with the maximum size of 100 000 points.
 
