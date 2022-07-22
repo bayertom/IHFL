@@ -100,6 +100,9 @@ radius of the cluster.
 
 Typical value used for point clouds acquired by ALS is 20-70 cm.
 
+
+![Various values of mju](./data/clusters_lambda.jpg)
+
 Example: Clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
 and maximum ball radius of 50 cm
 
