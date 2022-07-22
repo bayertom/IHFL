@@ -79,6 +79,7 @@ Example: Clusterization according to the ABN pseudonorm
 ![ABN](./data/Cone/clusters_abn.jpg)
 	
 1.2.3 Setting the pseudonorm threshold
+
 User-defined pseudonorm threshold refering to the maximum surface complexity (a maximum acceptable notch or protrusion) 
 can be set using the parameter "f"
 
