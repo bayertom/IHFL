@@ -186,4 +186,12 @@ This option reduces the performance of clustering!
 
 
 1.4 Results of the clusterization
-The output facilities as well as the output statistics are stored into *.txt files. They can easily be imported into external SW tool, for example the Cloud Compare.
+
+The output facilities are stored into *.txt files. They can easily be imported into external SW tool, for example the Cloud Compare.
+
+![Reuslts](./data/results.jpg)
+
+Any point stores ID of its facility.
+
+![Reuslts](./data/results2.jpg)
+
