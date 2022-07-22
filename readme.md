@@ -63,9 +63,15 @@ The pseudonorm can be set using the parameter "norm"
 	dfp: secant model, pseudonorm G4
 	l2: L2 norm
 	
-Example: Clusterization according to the dfp pseudonorm
+Example: Clusterization according to the DFP pseudonorm
 
 	ihfl "test.txt" +norm=dfp
+
+![ABN](./data/Cone/clusters_dfp.jpg)
+
+Example: Clusterization according to the ABN pseudonorm
+
+	ihfl "test.txt" +norm=abn
 
 ![ABN](./data/Cone/clusters_abn.jpg)
 	
