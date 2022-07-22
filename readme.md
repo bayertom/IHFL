@@ -132,6 +132,8 @@ User-defined value of the k-nearest neighbors used for the normal vector estimat
 
 Typical amount of k-nearest neighbors for point clouds acquired by ALS is 50.
 
+![Results](./data/ETH/clusters_normals_dfp.jpg)
+
 Example: Clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
 and maximum ball radius of 50 cm. The point cloud is partitioned into subsets with the maximum size of 100 000 points, the normal
 vector is estimated from 30 k-nearest neighbors.
