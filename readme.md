@@ -190,11 +190,13 @@ This option reduces the performance of clustering!
 The output facilities are stored into *.txt files. 
 
 File: *facil.txt
+
 List of all facilities,  they can easily be imported into external SW tool, for example the Cloud Compare.
 
 ![Results](./data/facilities.jpg)
 
 File: *facil2.txt
+
 Any point of the input cloud stores ID of its facility.
 
 ![Results](./data/facilities2.jpg)
