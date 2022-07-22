@@ -157,7 +157,7 @@ vector is estimated from 30 k-nearest neighbors, the isotropic factor is set to 
 
 1.4.1 Recompute values of facility costs
 
-The costs of input points can be recomputed according to the behavior of normal vectors using the switch "n"
+The costs of input points can be recomputed according to the behavior of normal vectors using the switch
 
 	-n 	
 
@@ -171,7 +171,7 @@ vector is estimated from 30 k-nearest neighbors, the isotropic factor is set to 
 
 1.4.2 Exporting clusters to DXF
 
-The resulted point cloud, facilities, connected clients and normal vectors can be exported into DXF file using the switch "e".
+The resulted point cloud, facilities, connected clients and normal vectors can be exported into DXF file using the switch
 
 	-e
 
