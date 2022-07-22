@@ -142,9 +142,9 @@ mju=1 ->pseudometric (fully anisotropic)
 
 	+mju=value
 
-Typical value of the isotropic factor is mju=0.95.
-
 ![Various values of mju](./data/clustering_metrics2.jpg)
+
+Typical value of the isotropic factor is mju=0.95.
 
 Example: Clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
 and maximum ball radius of 50 cm. The point cloud is partitioned into subsets with the maximum size of 100 000 points, the normal
