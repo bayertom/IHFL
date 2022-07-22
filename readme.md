@@ -121,7 +121,7 @@ and maximum ball radius of 50 cm. The point cloud is partitioned into subsets wi
 
 	ihfl "test.txt" +norm=dfp +fc=0.02 +lambda=0.5 +ns=100000
 
-1.3.5 Normal vector estimatiob
+1.3.5 Normal vector estimation
 
 User-defined value of the k-nearest neighbors used for the normal vector estimation using PCA can be set using the parameter "knn"
 
