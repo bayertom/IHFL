@@ -158,11 +158,11 @@ vector is estimated from 30 k-nearest neighbors, the isotropic factor is set to 
 
 1.4.1 Recompute values of facility costs
 
-The costs of input points can be recomputed according to the ehavior of normal vectors using the switch "n"
+The costs of input points can be recomputed according to the behavior of normal vectors using the switch "n"
 
 	-n 	
 
-Otherwise, the loaded or default costs are used.
+Otherwise, the loaded or default facility costs (fc=1) are used.
 
 Example: Clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
 and maximum ball radius of 50 cm. The point cloud is partitioned into subsets with the maximum size of 100 000 points, the normal
@@ -193,13 +193,13 @@ The output facilities are stored into *.txt files.
 
 File: *facil.txt
 
-List of all facilities,  they can easily be imported into external SW tool, for example the Cloud Compare.
+List of all facilities` they can easily be imported into external SW tool (for example the Cloud Compare).
 
 ![Results](./data/facilities.jpg)
 
 File: *facil2.txt
 
-Any point of the input cloud stores ID of its facility.
+Any point of the input point cloud stores ID of its facility.
 
 ![Results](./data/facilities2.jpg)
 
