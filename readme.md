@@ -98,7 +98,7 @@ radius of the cluster.
 
 	+lambda=value
 
-Typical value used for point clouds acquired by ALS is 20-70 cm.
+Typical value used for point clouds acquired by ALS is 0.2 - 0.7 m.
 
 
 ![Various values of mju](./data/clusters_lambda.jpg)
