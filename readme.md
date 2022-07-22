@@ -7,7 +7,7 @@ Facility location clustering of the point cloud according to the hybrid constrai
 
 Open the command prompt and use the following combination of parameters, their value and options: 
 
-ihfl file_name +parameter1=value1 +parameter2=value2 -option1 -option2
+	ihfl file_name +parameter1=value1 +parameter2=value2 -option1 -option2
 
 1.1 Input file
 
