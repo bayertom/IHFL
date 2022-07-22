@@ -172,7 +172,7 @@ vector is estimated from 30 k-nearest neighbors, the isotropic factor is set to 
 
 1.4.2 Exporting clusters to DXF
 
-The resulted facilities and connected clients can be exported into DXF file using the switch "e".
+The resulted point cloud, facilities, connected clients and normal vectors can be exported into DXF file using the switch "e".
 
 	-e
 
