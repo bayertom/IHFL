@@ -195,7 +195,7 @@ The output facilities are stored into *.txt files.
 
 File: *facil.txt
 
-List of all facilities` they can easily be imported into external SW tool (for example the Cloud Compare).
+List of all facilities that can easily be imported into external SW tool (for example, the Cloud Compare).
 
 ![Results](./data/facilities.jpg)
 
