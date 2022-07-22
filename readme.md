@@ -189,9 +189,9 @@ This option reduces the performance of clustering!
 
 The output facilities are stored into *.txt files. They can easily be imported into external SW tool, for example the Cloud Compare.
 
-![Reuslts](./data/results.jpg)
+![Results](./data/facilities.jpg)
 
 Any point stores ID of its facility.
 
-![Reuslts](./data/results2.jpg)
+![Results](./data/facilities2.jpg)
 
