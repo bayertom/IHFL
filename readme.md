@@ -79,7 +79,7 @@ Example: Clusterization according to the ABN pseudonorm
 
 ![ABN](./data/Cone/clusters_abn.jpg)
 	
-1.3.2 Setting the Facility cost
+1.3.2 Setting the facility cost
 
 User-defined facility cost can be set using the parameter "fc"
 
