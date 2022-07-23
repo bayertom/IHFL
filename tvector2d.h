@@ -3,6 +3,7 @@
 
 #include "TVector.h"
 
+//Alias type
 template <typename T>
 using TVector2D = TVector< TVector <T> >;
 
