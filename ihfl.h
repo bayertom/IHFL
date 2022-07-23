@@ -7,7 +7,8 @@
 #include "tvector2D.h"
 #include "facility.h"
 
-//Incremental heuristic facility location
+//Incremental heuristic facility location algorithm
+//Clustering according to the given (pasudo) norm
 class IHFL
 {
 	private:
