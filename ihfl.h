@@ -12,7 +12,7 @@
 class IHFL
 {
 	private:
-		bool rec_costs;			//Recompute cost of points according to normals
+		bool rec_costs;			//Recompute cost of points according to normal vectors
 		int k;				//Amount of nearest neighbors, estimation of normal vectors
 		double  lambda,			//Radius of the ball
 			mju,			//Isotropic factor
