@@ -81,13 +81,15 @@ where:
 - dfp: secant model, pseudonorm G4,
 - l2: L2 norm.
 	
-Example: Clusterization according to the DFP pseudonorm
+***Example:***
+*Clusterization according to the DFP pseudonorm*
 
 	ihfl "test.txt" +norm=dfp
 
 ![ABN](./data/Cone/clusters_dfp.jpg)
 
-Example: Clusterization according to the ABN pseudonorm
+***Example:***
+*Clusterization according to the ABN pseudonorm*
 
 	ihfl "test.txt" +norm=abn
 
@@ -119,8 +121,9 @@ In general, it represents the maximum cluster radius. The typical value for dens
 
 ![Various values of mju](./data/clusters_lambda.jpg)
 
-Example: Clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
-and maximum ball radius of 50 cm
+***Example:***
+*Clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
+and maximum ball radius of 50 cm*
 
 	ihfl "test.txt" +norm=dfp +fc=0.02 +lambda=0.5
 
@@ -135,8 +138,9 @@ The typical size of the subset used for point clouds acquired by ALS is 100000.
 
 ![Various values of mju](./data/progress.jpg)
 
-Example: Clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
-and maximum ball radius of 50 cm. The point cloud is partitioned into subsets with the maximum size of 100 000 points.
+***Example:***
+*Clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
+and maximum ball radius of 50 cm. The point cloud is partitioned into subsets with the maximum size of 100 000 points*
 
 	ihfl "test.txt" +norm=dfp +fc=0.02 +lambda=0.5 +ns=100000
 
@@ -150,9 +154,10 @@ The typical amount of k-nearest neighbors for point clouds acquired by ALS is 50
 
 ![Results](./data/ETH/clusters_normals_dfp.jpg)
 
-Example: Clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
+***Example:***
+*Clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
 and maximum ball radius of 50 cm. The point cloud is partitioned into subsets with the maximum size of 100 000 points, the normal
-vector is estimated from 30 k-nearest neighbors.
+vector is estimated from 30 k-nearest neighbors*
 
 	ihfl "test.txt" +norm=dfp +fc=0.02 +lambda=0.5 +ns=100000 +knn=30
 
@@ -170,9 +175,10 @@ Important parameter of the clusterization significantly affecting the behavior o
 
 The typical value of the isotropic factor is mju=0.95.
 
-Example: Clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
+***Example:***
+*Clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
 and maximum ball radius of 50 cm. The point cloud is partitioned into subsets with a maximum size of 100 000 points, the normal
-vector is estimated from 30 k-nearest neighbors, and the isotropic factor is set to 0.95.
+vector is estimated from 30 k-nearest neighbors, and the isotropic factor is set to 0.95*
 
 	ihfl "test.txt" +norm=dfp +fc=0.02 +lambda=0.5 +ns=100000 +knn=30 +mju=0.95
 
@@ -186,9 +192,10 @@ The costs of input points can be recomputed according to the behavior of normal 
 
 Otherwise, the loaded or default facility costs (fc=1) are used.
 
-Example: Clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
+***Example:***
+*Clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
 and maximum ball radius of 50 cm. The point cloud is partitioned into subsets with a maximum size of 100 000 points, the normal
-vector is estimated from 30 k-nearest neighbors, the isotropic factor is set to 0.95.
+vector is estimated from 30 k-nearest neighbors, the isotropic factor is set to 0.95*
 
 	ihfl test.txt +norm=dfp +fc=0.02 +lambda=0.5 +ns=100000 +knn=30 +mju=0.95 -n
 
@@ -200,9 +207,10 @@ The resulted point cloud, facilities, connected clients and normal vectors can b
 
 ![Results](./data/export.jpg)
 
-Example: non-uniform clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
+***Example:***
+*Clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
 and maximum ball radius of 50 cm. The point cloud is partitioned into subsets with the maximum size of 100 000 points, the normal
-vector is estimated from 30 k-nearest neighbors, the isotropic factor is set to 0.95, and the resulted clusters are exported into DXF file.
+vector is estimated from 30 k-nearest neighbors, the isotropic factor is set to 0.95, and the resulted clusters are exported into DXF file*
 
 	ihfl test.txt +norm=dfp +met=ihfl +fc=0.02 +lam=0.5 +ns=100000 +knn=30 +mju=0.95 -n -e
 
