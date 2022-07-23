@@ -1,11 +1,11 @@
 1. IHFL, short manual
 
-Facility location clustering of the point cloud according to the hybrid constrained pseudonorm with additional penalty. 
+Facility location clustering of the point cloud according to the hybrid constrained pseudonorm with an additional penalty. 
 
 
 1.1. Running the software
 
-Open the command prompt and use the following combination of parameters, their value and options: 
+Open the command prompt and use the following combination of parameters, their values, and options: 
 
 	ihfl file_name +parameter1=value1 +parameter2=value2 -option1 -option2
 
@@ -85,7 +85,7 @@ User-defined facility cost can be set using the parameter "fc"
 
 	+fc=val
 
-In our paper, fc refers to the maximum surface complexity (a maximum acceptable notch or protrusion), if the switch -n is enabled. A typical value used for point clouds acquired by ALS is 0.01 - 0.05 m.
+In our paper, fc refers to the maximum surface complexity (a maximum acceptable notch or protrusion), if the switch -n is enabled. The typical value used for point clouds acquired by ALS is 0.01 - 0.05 m.
 
 Example: Clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
 
@@ -98,7 +98,7 @@ radius of the cluster.
 
 	+lambda=value
 
-Typical value used for point clouds acquired by ALS is 0.2 - 0.7 m.
+The typical value used for point clouds acquired by ALS is 0.2 - 0.7 m.
 
 
 ![Various values of mju](./data/clusters_lambda.jpg)
@@ -115,7 +115,7 @@ using the parameter "ns"
 
 	+ns=value
 
-Typical size of the subset used for point clouds acquired by ALS is 100000.
+The typical size of the subset used for point clouds acquired by ALS is 100000.
 
 ![Various values of mju](./data/progress.jpg)
 
@@ -130,7 +130,7 @@ User-defined value of the k-nearest neighbors used for the normal vector estimat
 
 	+knn=value
 
-Typical amount of k-nearest neighbors for point clouds acquired by ALS is 50.
+The typical amount of k-nearest neighbors for point clouds acquired by ALS is 50.
 
 ![Results](./data/ETH/clusters_normals_dfp.jpg)
 
@@ -150,7 +150,7 @@ mju=1 ->pseudometric (fully anisotropic)
 
 ![Various values of mju](./data/clustering_metrics2.jpg)
 
-Typical value of the isotropic factor is mju=0.95.
+The typical value of the isotropic factor is mju=0.95.
 
 Example: Clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
 and maximum ball radius of 50 cm. The point cloud is partitioned into subsets with the maximum size of 100 000 points, the normal
