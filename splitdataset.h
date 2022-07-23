@@ -5,7 +5,7 @@
 #include "point3d.h"
 #include "tvector.h"
 
-//Split dataset using KD-Tree
+//Split 3D dataset using KD-Tree
 class SplitDataset
 {
 	public:
