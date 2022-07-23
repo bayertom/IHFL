@@ -1,4 +1,4 @@
-1. IHFL, short tutorial
+# 1. IHFL, short tutorial
 
 Facility location clustering of the point cloud according to the hybrid constrained pseudonorm with an additional penalty. 
 
