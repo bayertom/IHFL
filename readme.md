@@ -1,4 +1,4 @@
-1. IHFL, short manual
+1. IHFL, short tutorial
 
 Facility location clustering of the point cloud according to the hybrid constrained pseudonorm with an additional penalty. 
 
@@ -22,7 +22,7 @@ The input txt file contains the Cartesian coordinates X, Y, Z of points of the i
 	0.2398   -0.1096   -0.6590  
 	0.4011   0.1324   -1.0559   
 
-The facility costs can also be stored:
+It can also store the facility costs:
 
 	0.3912   -0.3071   -1.2434  0.15
 	0.1010   0.4371   -1.1216   0.25
@@ -32,7 +32,7 @@ The facility costs can also be stored:
 	0.2398   -0.1096   -0.6590  0.97
 	0.4011   0.1324   -1.0559   0.33
 
-Or, additionally, the RGB components:
+or, additionally, the RGB components:
 
 	26.0135 59.13663864 295.3752 80 92 103
 	25.7128 58.88088226 295.5329 56 66 78
@@ -85,7 +85,7 @@ User-defined facility cost can be set using the parameter "fc"
 
 	+fc=val
 
-In our paper, fc refers to the maximum surface complexity (a maximum acceptable notch or protrusion), if the switch -n is enabled. The typical value used for point clouds acquired by ALS is 0.01 - 0.05 m.
+In our paper, fc refers to the maximum surface complexity (a maximum acceptable notch or protrusion), if the switch -n is enabled. The typical value for point clouds acquired by ALS is 0.01 - 0.05 m.
 
 Example: Clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
 
@@ -98,7 +98,7 @@ radius of the cluster.
 
 	+lambda=value
 
-The typical value used for point clouds acquired by ALS is 0.2 - 0.7 m.
+The typical value for point clouds acquired by ALS is 0.2 - 0.7 m.
 
 
 ![Various values of mju](./data/clusters_lambda.jpg)
@@ -142,8 +142,8 @@ vector is estimated from 30 k-nearest neighbors.
 
 1.3.6 Setting the isotropic ratio
 
-User defined isotropic factor mju, mju in (0,1), regulating the influence of the L2 metric and pseudometric.  Important parameter of 
-the clusterization, significantly affects the behavior of the clusterization process: mju=0 -> L2 metric (fully isotropic), 
+User-defined isotropic factor mju, mju in (0,1), regulating the influence of the L2 metric and pseudometric.  Important parameter of 
+the clusterization significantly affects the behavior of the clusterization process: mju=0 -> L2 metric (fully isotropic), 
 mju=1 ->pseudometric (fully anisotropic)
 
 	+mju=value
@@ -153,8 +153,8 @@ mju=1 ->pseudometric (fully anisotropic)
 The typical value of the isotropic factor is mju=0.95.
 
 Example: Clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
-and maximum ball radius of 50 cm. The point cloud is partitioned into subsets with the maximum size of 100 000 points, the normal
-vector is estimated from 30 k-nearest neighbors, the isotropic factor is set to 0.95.
+and maximum ball radius of 50 cm. The point cloud is partitioned into subsets with a maximum size of 100 000 points, the normal
+vector is estimated from 30 k-nearest neighbors, and the isotropic factor is set to 0.95.
 
 	ihfl "test.txt" +norm=dfp +fc=0.02 +lambda=0.5 +ns=100000 +knn=30 +mju=0.95
 
@@ -169,7 +169,7 @@ The costs of input points can be recomputed according to the behavior of normal 
 Otherwise, the loaded or default facility costs (fc=1) are used.
 
 Example: Clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
-and maximum ball radius of 50 cm. The point cloud is partitioned into subsets with the maximum size of 100 000 points, the normal
+and maximum ball radius of 50 cm. The point cloud is partitioned into subsets with a maximum size of 100 000 points, the normal
 vector is estimated from 30 k-nearest neighbors, the isotropic factor is set to 0.95.
 
 	ihfl test.txt +norm=dfp +fc=0.02 +lambda=0.5 +ns=100000 +knn=30 +mju=0.95 -n
@@ -184,7 +184,7 @@ The resulted point cloud, facilities, connected clients and normal vectors can b
 
 Example: non-uniform clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
 and maximum ball radius of 50 cm. The point cloud is partitioned into subsets with the maximum size of 100 000 points, the normal
-vector is estimated from 30 k-nearest neighbors, the isotropic factor is set to 0.95, the resulted clusters are exported into DXF file.
+vector is estimated from 30 k-nearest neighbors, the isotropic factor is set to 0.95, and the resulted clusters are exported into DXF file.
 
 	ihfl test.txt +norm=dfp +met=ihfl +fc=0.02 +lam=0.5 +ns=100000 +knn=30 +mju=0.95 -n -e
 
@@ -193,7 +193,7 @@ This option reduces the performance of clustering!
 
 1.5 Results of the clusterization
 
-The output facilities are stored into *.txt files. 
+The output facilities are stored in *.txt files. 
 
 File: *facil.txt
 
@@ -203,7 +203,6 @@ List of all facilities that can easily be imported into external SW tool (for ex
 
 File: *facil2.txt
 
-Any point of the input point cloud stores ID of its facility.
+Any point of the input point cloud stores ID of its facility (to which it is connected).
 
 ![Results](./data/facilities2.jpg)
-
