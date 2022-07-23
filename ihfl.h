@@ -12,7 +12,7 @@ class IHFL
 {
 	private:
 		bool rec_costs;			//Recompute cost of points according to normals
-		int k;				//Amount of nearest neighbors
+		int k;				//Amount of nearest neighbors, estimation of normal vectors
 		double  lambda,			//Radius of the ball
 			mju,			//Isotropic factor
 			l;			//Penalization outside the ball, power of distance differences
@@ -20,8 +20,8 @@ class IHFL
 
 
 	public:
-		 IHFL(const bool non_uniform_, const int k_, const double lambda_, const double mju_, const double l_, const pfnorm &fnorm_) :
-			rec_costs(non_uniform_), k(k_), lambda(lambda_), mju(mju_), l(l_), fnorm(fnorm_) {}
+		 IHFL(const bool rec_costs_, const int k_, const double lambda_, const double mju_, const double l_, const pfnorm &fnorm_) :
+			rec_costs(rec_costs_), k(k_), lambda(lambda_), mju(mju_), l(l_), fnorm(fnorm_) {}
 		
 		 void generateClusters(const double w, const double h, const double rad, const int nc, const int n, TVector <Point3D>& U);
 		 void generateCone(const double a, const double b, const int n, TVector <Point3D>& U);
