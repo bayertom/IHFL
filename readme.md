@@ -11,7 +11,7 @@ It depends on the following libraries:
 - Eigen, https://gitlab.com/libeigen/eigen, 
 - C++ Bost, https://www.boost.org/.
 
-## 1.1. Running the software
+## 1.2. Running the software
 
 The binary version (64 bit, VS 2022 compiler) of the clusterization software
 
@@ -21,7 +21,7 @@ can be found in \bin directory. To run the software, open the command prompt and
 
 	ihfl file_name +parameter1=value1 +parameter2=value2 -option1 -option2
 
-## 1.2 Input file
+## 1.3 Input file
 
 The input txt file contains the Cartesian coordinates X, Y, Z of points of the input point cloud. Each item is separated by space or TAB:
 
@@ -65,9 +65,9 @@ can be combined with the facility costs:
 	25.5829 59.00433350 295.3919 0.33 82 88 100 
 
 
-## 1.3 List of parameters
+## 1.4 List of parameters
 
-### 1.3.1 Setting the pseudonorm
+### 1.4.1 Setting the pseudonorm
 
 The desired (pseudo) norm can be set using the parameter "norm"
 
@@ -95,7 +95,7 @@ where:
 
 ![ABN](./data/Cone/clusters_abn.jpg)
 	
-### 1.3.2 Setting the facility cost
+### 1.4.2 Setting the facility cost
 
 User-defined facility cost can be set using the parameter "fc"
 
@@ -110,7 +110,7 @@ Note: In our paper, fc refers to the maximum surface complexity (a maximum accep
 
 	ihfl "test.txt" +norm=dfp +fc=0.02
 
-### 1.3.3 Setting the maximum ball radius
+### 1.4.3 Setting the maximum ball radius
 
 User-defined maximum value of the ball radius lambda can be set using the parameter "lambda"
 
@@ -127,7 +127,7 @@ and maximum ball radius of 50 cm*
 
 	ihfl "test.txt" +norm=dfp +fc=0.02 +lambda=0.5
 
-### 1.3.4 Setting the subset size
+### 1.4.4 Setting the subset size
 
 The input datasets can recursively be partitioned into subsets using kD-tree. The maximum amount points per a subset can be set
 using the parameter "ns"
@@ -144,7 +144,7 @@ and maximum ball radius of 50 cm. The point cloud is partitioned into subsets wi
 
 	ihfl "test.txt" +norm=dfp +fc=0.02 +lambda=0.5 +ns=100000
 
-### 1.3.5 Normal vector estimation
+### 1.4.5 Normal vector estimation
 
 User-defined value of the k-nearest neighbors used for the normal vector estimation using PCA. It can be set using the parameter "knn"
 
@@ -161,7 +161,7 @@ vector is estimated from 30 k-nearest neighbors*
 
 	ihfl "test.txt" +norm=dfp +fc=0.02 +lambda=0.5 +ns=100000 +knn=30
 
-### 1.3.6 Setting the isotropic ratio
+### 1.4.6 Setting the isotropic ratio
 
 User-defined isotropic factor mju, mju in (0,1), regulating the influence of the L2 metric and pseudometric.  
 
@@ -182,9 +182,9 @@ vector is estimated from 30 k-nearest neighbors, and the isotropic factor is set
 
 	ihfl "test.txt" +norm=dfp +fc=0.02 +lambda=0.5 +ns=100000 +knn=30 +mju=0.95
 
-## 1.4 List of switches
+## 1.5 List of switches
 
-### 1.4.1 Recompute values of facility costs
+### 1.5.1 Recompute values of facility costs
 
 The costs of input points can be recomputed according to the behavior of normal vectors using the switch
 
@@ -199,7 +199,7 @@ vector is estimated from 30 k-nearest neighbors, the isotropic factor is set to 
 
 	ihfl test.txt +norm=dfp +fc=0.02 +lambda=0.5 +ns=100000 +knn=30 +mju=0.95 -n
 
-### 1.4.2 Exporting clusters to DXF
+### 1.5.2 Exporting clusters to DXF
 
 The resulted point cloud, facilities, connected clients and normal vectors can be exported into DXF file using the switch
 
@@ -217,7 +217,7 @@ vector is estimated from 30 k-nearest neighbors, the isotropic factor is set to 
 This option reduces the performance of clustering! 
 
 
-## 1.5 Results of the clusterization
+## 1.6 Results of the clusterization
 
 The output facilities are stored in *.txt files. 
 
