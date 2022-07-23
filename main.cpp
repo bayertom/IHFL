@@ -263,7 +263,7 @@ int main(int argc, char* argv[])
 			const clock_t begin_time = clock();
 
 			//Incremental heuristic location (IFL)
-			IHFL clust(rec_costs, knn, fc, lambda, mju, l, fnorm);
+			IHFL clust(rec_costs, knn, lambda, mju, l, fnorm);
 			clust.clusterizeIHFL(kd_point_tile, fc, F, AN);
 			
 			//Statistics
