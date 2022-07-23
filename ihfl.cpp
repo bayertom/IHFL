@@ -459,7 +459,7 @@ void IHFL::clusterizeIHFL(TVector <Point3D>&U, const double fc, TVector <Facilit
 		if (i % (25000) == 0)
 			std::cout << i << " ";
 
-		//Update clusters using the IHFL method
+		//Update clusters using the IHFL method, heuristic approach
 		updateClusters(i, U, F, RP);
 	}
 }
@@ -469,9 +469,9 @@ void IHFL::updateClusters(const int pi, const TVector <Point3D>& points, TVector
 {
 	//Incremental method, update of the clusterization takes one of four strategies:
 	//   1) Create new facility at p: S1
-	//   2) Add p to the nearest facility: S2
-	//   3) Ressign all clusters closest to p: create cluster at p + full reallocation: S3
-	//   4) Reassign parts of clusters closest to p: create cluster at p + partial reassignment: S4
+	//   2) Connect p to the (pseudo) nearest facility: S2
+	//   3) Reallocate all clusters (pseudo) nearest to p. Create facility at p + multiple full reallocations: S3
+	//   4) Reallocate parts of clusters (pseudo) nearest to p. Create facility at p + multiple partial reallocations: S4
 
 	//Initialize index
 	int i = 0, i_nearest = -1;
