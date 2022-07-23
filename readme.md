@@ -149,8 +149,8 @@ User-defined isotropic factor mju, mju in (0,1), regulating the influence of the
 	+mju=value
 
 Important parameter of the clusterization significantly affecting the behavior of the clusterization process: 
-    mju=0 -> L2 metric (fully isotropic), 
-    mju=1 ->pseudometric (fully anisotropic).
+- mju=0 -> L2 metric (fully isotropic), 
+- mju=1 ->pseudometric (fully anisotropic).
 
 ![Various values of mju](./data/clustering_metrics2.jpg)
 
