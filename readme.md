@@ -1,7 +1,7 @@
 # 1. IHFL, short tutorial
 
-Basic properties and features of the facility location clustering of the point cloud according to the hybrid 
-constrained pseudonorm with an additional penalty are described.
+Basic properties and features of the facility location clustering of the point cloud, according to the hybrid 
+constrained pseudonorm with an additional penalty, are described.
 
 ## 1.1. Source code
 The source code of the clusterization software written in C++ (C++ 2021) is bundled as the Visual Studio 2022 project. 
