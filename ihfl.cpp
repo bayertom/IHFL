@@ -369,7 +369,6 @@ void IHFL::recomputeFacilityCosts(const double fc, const double crit, double rat
 		else
 		{
 			U[i].fc = std::max(std::min(fc  * crit / (RP[i].abn + eps), rat * fc), fc / rat);
-
 		}
 	}
 }
@@ -653,8 +652,3 @@ double IHFL::computeCost(const TVector <Facility>& F, const TVector <Point3D> &p
 
 	return total_cost;
 }
-
-
-
-
-
