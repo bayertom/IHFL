@@ -57,10 +57,11 @@ can be combined with the facility costs:
 
 1.3.1 Setting the pseudonorm
 
-The pseudonorm can be set using the parameter "norm"
+The desired (pseudo) norm can be set using the parameter "norm"
 
 +norm=val
 
+where
 	abn: tangent model, pseudonorm G1
 	dis: tangent model, pseudonorm G2
 	ablp: secant model, pseudonorm G3
@@ -95,12 +96,11 @@ Example: Clusterization according to dfp pseudonorm using IHFL algorithm with th
 
 1.3.3 Setting the maximum ball radius
 
-User-defined maximum value of the ball radius lambda can be set using the parameter "ball". This value represents the maximum
-radius of the cluster.
+User-defined maximum value of the ball radius lambda can be set using the parameter "lambda"
 
 	+lambda=value
 
-The typical value for point clouds acquired by ALS is 0.2 - 0.7 m.
+In general, it represents the maximum cluster radius. The typical value for dense point clouds acquired by ALS is 0.2 - 0.7 m.
 
 
 ![Various values of mju](./data/clusters_lambda.jpg)
@@ -112,7 +112,7 @@ and maximum ball radius of 50 cm
 
 1.3.4 Setting the subset size
 
-The input datasets can be recursively partitioned into subsets using kD-tree. The maximum amount points per a subset can be set
+The input datasets can recursively be partitioned into subsets using kD-tree. The maximum amount points per a subset can be set
 using the parameter "ns"
 
 	+ns=value
@@ -128,7 +128,7 @@ and maximum ball radius of 50 cm. The point cloud is partitioned into subsets wi
 
 1.3.5 Normal vector estimation
 
-User-defined value of the k-nearest neighbors used for the normal vector estimation using PCA can be set using the parameter "knn"
+User-defined value of the k-nearest neighbors used for the normal vector estimation using PCA. It can be set using the parameter "knn"
 
 	+knn=value
 
@@ -144,11 +144,13 @@ vector is estimated from 30 k-nearest neighbors.
 
 1.3.6 Setting the isotropic ratio
 
-User-defined isotropic factor mju, mju in (0,1), regulating the influence of the L2 metric and pseudometric.  Important parameter of 
-the clusterization significantly affects the behavior of the clusterization process: mju=0 -> L2 metric (fully isotropic), 
-mju=1 ->pseudometric (fully anisotropic)
+User-defined isotropic factor mju, mju in (0,1), regulating the influence of the L2 metric and pseudometric.  
 
 	+mju=value
+
+Important parameter of the clusterization significantly affecting the behavior of the clusterization process: 
+    mju=0 -> L2 metric (fully isotropic), 
+    mju=1 ->pseudometric (fully anisotropic).
 
 ![Various values of mju](./data/clustering_metrics2.jpg)
 
