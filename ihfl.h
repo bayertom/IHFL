@@ -8,7 +8,7 @@
 #include "facility.h"
 
 //Incremental heuristic facility location algorithm
-//Clustering according to the given (pasudo) norm
+//Clustering according to the given (pseudo) norm
 class IHFL
 {
 	private:
