@@ -82,7 +82,7 @@ where:
 - l2: L2 norm.
 	
 #### Example:
-Clusterization according to the DFP pseudonorm
+*Clusterization according to the DFP pseudonorm*
 
 	ihfl "test.txt" +norm=dfp
 
