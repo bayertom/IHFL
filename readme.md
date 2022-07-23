@@ -23,7 +23,7 @@ can be found in \bin directory. To run the software, open the command prompt and
 
 ## 1.3 Input file
 
-The input txt file contains the Cartesian coordinates X, Y, Z of points of the input point cloud. Each item is separated by space or TAB:
+The input txt file contains the Cartesian coordinates X, Y, Z of the input point cloud. Each item is separated by space or TAB:
 
 
 	0.3912   -0.3071   -1.2434  
@@ -34,7 +34,7 @@ The input txt file contains the Cartesian coordinates X, Y, Z of points of the i
 	0.2398   -0.1096   -0.6590  
 	0.4011   0.1324   -1.0559   
 
-It can also store the facility costs:
+and may also contain the facility cost:
 
 	0.3912   -0.3071   -1.2434  0.15
 	0.1010   0.4371   -1.1216   0.25
