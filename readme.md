@@ -103,8 +103,9 @@ It overrides the values of facility costs loaded from the input file.
 
 Note: In our paper, fc refers to the maximum surface complexity (a maximum acceptable notch or protrusion), if the switch -n is enabled. The typical value for point clouds acquired by ALS is 0.01 - 0.05 m.
 
-***Example:*** 
-**Clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm**
+***Example:***
+
+*Clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm*
 
 	ihfl "test.txt" +norm=dfp +fc=0.02
 
