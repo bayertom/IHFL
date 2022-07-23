@@ -62,11 +62,12 @@ The desired (pseudo) norm can be set using the parameter "norm"
 +norm=val
 
 where
-	abn: tangent model, pseudonorm G1
-	dis: tangent model, pseudonorm G2
-	ablp: secant model, pseudonorm G3
-	dfp: secant model, pseudonorm G4
-	l2: L2 norm
+
+- abn: tangent model, pseudonorm G1
+- dis: tangent model, pseudonorm G2
+- ablp: secant model, pseudonorm G3
+- dfp: secant model, pseudonorm G4
+- l2: L2 norm
 	
 Example: Clusterization according to the DFP pseudonorm
 
