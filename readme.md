@@ -32,7 +32,7 @@ It can also store the facility costs:
 	0.2398   -0.1096   -0.6590  0.97
 	0.4011   0.1324   -1.0559   0.33
 
-or, additionally, the RGB components:
+or, additionally, the RGB components stored as integers:
 
 	26.0135 59.13663864 295.3752 80 92 103
 	25.7128 58.88088226 295.5329 56 66 78
