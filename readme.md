@@ -1,11 +1,23 @@
 # 1. IHFL, short tutorial
 
-Facility location clustering of the point cloud according to the hybrid constrained pseudonorm with an additional penalty. 
+Basic properties and features of the facility location clustering of the point cloud according to the hybrid 
+constrained pseudonorm with an additional penalty are described.
 
+## 1.1. Source code
+The source code of the clusterization software written in C++ (C++ 2021) is bundled as the Visual Studio 2022 project. 
+It depends on the following libraries:
+
+- nanoflann, https://github.com/jlblancoc/nanoflann,
+- Eigen, https://gitlab.com/libeigen/eigen, 
+- C++ Bost, https://www.boost.org/.
 
 ## 1.1. Running the software
 
-Open the command prompt and use the following combination of parameters, their values, and options: 
+The binary version (64 bit, VS 2022 compiler) of the clusterization software
+
+     ihfl.exe
+
+can be found in \bin directory. To run the software, open the command prompt and use the following combination of parameters, values, and options: 
 
 	ihfl file_name +parameter1=value1 +parameter2=value2 -option1 -option2
 
