@@ -340,5 +340,3 @@ std::string DXFExport::to_string(const double value, const unsigned short dec_pl
 	out << std::setprecision(dec_places) << value;
 	return out.str();
 }
-
-
