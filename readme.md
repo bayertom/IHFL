@@ -238,7 +238,7 @@ The results of the clusterization process are stored in two *.txt files:
  - *facil.txt,
  - *facil2.txt.
 
-For any subset of the point cloud, these files are generated.
+For any subset of the point cloud, these files are generated automatically.
 
 #### File: *facil.txt
 List of all facilities and their costs that can easily be imported into external SW tool (e.g., the Cloud Compare).
@@ -252,4 +252,4 @@ Any point of the input point cloud stores ID of its facility (to which it is con
 ![Results](./data/facilities2.jpg)
 
 #### Important note:
-All files *facil*.txt in the folder need to be deleted by the user before running the clusterization software. Otherwise, the clusterization will not be performed.
+All generated files *facil*.txt in the folder need to be deleted by the user before running the clusterization software. Otherwise, the clusterization will not be performed.
