@@ -140,14 +140,15 @@ The typical size of the subset used for point clouds acquired by ALS is 100000.
 
 All subsets of the input point cloud are stored into separate files. Their list can be found in *.list file:
 
-	test.txt_6_3_0
-	test.txt_5_3_0
-	test.txt_8_3_0
-	test.txt_7_3_0
-	test.txt_12_3_0
-	test.txt_11_3_0
-	test.txt_14_3_0
-	test.txt_13_3_0
+	test.txt.list:
+           test.txt_6_3_0
+	   test.txt_5_3_0
+	   test.txt_8_3_0
+	   test.txt_7_3_0
+	   test.txt_12_3_0
+	   test.txt_11_3_0
+	   test.txt_14_3_0
+	   test.txt_13_3_0
 
 If the *.list file is found in the same folder, the splitting procedure is skipped.
  
