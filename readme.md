@@ -22,7 +22,7 @@ can be found in \bin directory. To run the software, open the command prompt and
 	ihfl file_name +parameter1=value1 +parameter2=value2 -option1 -option2
 
 #### Note:
-All generated output files *facil*.txt in the folder need to be deleted by the user before running the clusterization software. Otherwise, the clusterization will not be performed. For further details, see Sec. 1.6.
+All generated output files facil*.txt in the folder need to be deleted by the user before running the clusterization software. Otherwise, the clusterization will not be performed. For further details, see Sec. 1.6.
 
 ## 1.3 Input file
 
@@ -255,4 +255,4 @@ Any point of the input point cloud stores ID of its facility (to which it is con
 ![Results](./data/facilities2.jpg)
 
 #### Important note:
-All generated output files *facil*.txt in the folder need to be deleted by the user before running the clusterization software. Otherwise, the clusterization will not be performed.
+All generated output files facil*.txt in the folder need to be deleted by the user before running the clusterization software. Otherwise, the clusterization will not be performed.
