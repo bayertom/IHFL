@@ -243,7 +243,7 @@ List of all facilities and their costs that can easily be imported into external
 
 ![Results](./data/facilities.jpg)
 
-*File: *facil2.txt*
+* File: *facil2.txt *
 
 Any point of the input point cloud stores ID of its facility (to which it is connected).
 
