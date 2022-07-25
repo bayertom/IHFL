@@ -252,4 +252,4 @@ Any point of the input point cloud stores ID of its facility (to which it is con
 ![Results](./data/facilities2.jpg)
 
 #### Important note:
-All generated files *facil*.txt in the folder need to be deleted by the user before running the clusterization software. Otherwise, the clusterization will not be performed.
+All generated output files *facil*.txt in the folder need to be deleted by the user before running the clusterization software. Otherwise, the clusterization will not be performed.
