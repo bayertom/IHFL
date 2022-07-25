@@ -138,6 +138,20 @@ The typical size of the subset used for point clouds acquired by ALS is 100000.
 
 ![Various values of mju](./data/progress.jpg)
 
+All subsets of the input point cloud are stored into separate files. Their list can be found in *.list file:
+
+	test.txt_6_3_0
+	test.txt_5_3_0
+	test.txt_8_3_0
+	test.txt_7_3_0
+	test.txt_12_3_0
+	test.txt_11_3_0
+	test.txt_14_3_0
+	test.txt_13_3_0
+
+If the *.list file is found in the same folder, the splitting procedure is skipped.
+ 
+
 #### Example:
 *Clusterization according to dfp pseudonorm using IHFL algorithm with the maximum surface complexity of 2 cm
 and maximum ball radius of 50 cm. The point cloud is partitioned into subsets with the maximum size of 100 000 points*
@@ -219,7 +233,9 @@ This option reduces the performance of clustering!
 
 ## 1.6 Results of the clusterization
 
-The output facilities are stored in *.txt files. 
+The reults of the clusterization process are stored in two *.txt files:
+ - *facil.txt,
+ - facil2.txt.
 
 File: *facil.txt
 
@@ -232,3 +248,6 @@ File: *facil2.txt
 Any point of the input point cloud stores ID of its facility (to which it is connected).
 
 ![Results](./data/facilities2.jpg)
+
+#### Note:
+Both files needs to be deleted by the user before running the clusterization software. 
