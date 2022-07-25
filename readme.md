@@ -237,13 +237,12 @@ The results of the clusterization process are stored in two *.txt files:
  - *facil.txt,
  - *facil2.txt.
 
-*File: *facil.txt*
-
+#### File: *facil.txt
 List of all facilities and their costs that can easily be imported into external SW tool (e.g., the Cloud Compare).
 
 ![Results](./data/facilities.jpg)
 
-* File: *facil2.txt *
+#### File: *facil2.txt
 
 Any point of the input point cloud stores ID of its facility (to which it is connected).
 
