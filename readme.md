@@ -21,6 +21,9 @@ can be found in \bin directory. To run the software, open the command prompt and
 
 	ihfl file_name +parameter1=value1 +parameter2=value2 -option1 -option2
 
+#### Note:
+All generated output files *facil*.txt in the folder need to be deleted by the user before running the clusterization software. Otherwise, the clusterization will not be performed. See Sec. 1.6.
+
 ## 1.3 Input file
 
 The input txt file contains the Cartesian coordinates X, Y, Z of the input point cloud. Each item is separated by space or TAB:
