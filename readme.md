@@ -248,5 +248,5 @@ Any point of the input point cloud stores ID of its facility (to which it is con
 
 ![Results](./data/facilities2.jpg)
 
-#### Note:
-Both files needs to be deleted by the user before running the clusterization software. 
+#### Important note:
+Both files needs to be deleted by the user before running the clusterization software. Otherwise, the clusterization will not be performed.
