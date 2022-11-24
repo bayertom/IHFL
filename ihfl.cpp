@@ -344,7 +344,7 @@ void IHFL::generateCube(const double a, const int n, TVector <Point3D>& U)
 }
 
 
-void IHFL::recomputeFacilityCosts(const double fc, const double crit, double rat, const TVector <RegressionPlane>& RP, const pfnorm& fnorm, TVector <Point3D> &U)
+void IHFL::recomputeFacilityCosts(const double fc, double rat, const TVector <RegressionPlane>& RP, const pfnorm& fnorm, TVector <Point3D> &U)
 {
 	//Recompute facility cost according to the normals for non-uniform clustering
 	const double eps = 0.0001;
@@ -352,23 +352,16 @@ void IHFL::recomputeFacilityCosts(const double fc, const double crit, double rat
 	for (int i = 0; i < U.size(); i++)
 	{
 		//ABN
-		if (fnorm == &IHFL::nDIS || fnorm == &IHFL::nABN || fnorm == &IHFL::nABLP || fnorm == &IHFL::nDFP)
+		if (fnorm == &IHFL::nDIS || fnorm == &IHFL::nABN || fnorm == &IHFL::nABLP)
 		{
 			//Compute new facility cost
 			U[i].fc = std::max(std::min(fc * fc / (RP[i].abn + eps), rat * fc), fc / rat);
 		}
 		
-		//DFP
-		else if (fnorm == &IHFL::nDFP)
+		//DFP + L2
+		else if (fnorm == &IHFL::nDFP || fnorm == &IHFL::nL2)
 		{
 			U[i].fc = std::max(std::min(fc * fc / (RP[i].sigma + eps), rat * fc), fc / rat);
-		}
-		
-
-		//L2-ABN
-		else
-		{
-			U[i].fc = std::max(std::min(fc  * crit / (RP[i].abn + eps), rat * fc), fc / rat);
 		}
 	}
 }
@@ -436,13 +429,15 @@ void IHFL::clusterizeIHFL(TVector <Point3D>&U, const double fc, TVector <Facilit
 	//Compute average normals, regression errors
 	getAveragePointNormal(U, knn_id, RP);
 
-	//Recompute facility costs according to normals (replace old values)
-	if (rec_costs)
+	//Recompute facility costs according to normals (replace old values)]
+	const double multiplier = 10.0;
+	if (non_uniform_cl)
 	{
-		if (fnorm != &IHFL::nL2)
-			recomputeFacilityCosts(fc, 0.0, 5.0, RP, fnorm, U);
-		else
-			recomputeFacilityCosts(lambda, fc, 5.0, RP, &IHFL::nL2, U);
+		//if (fnorm != &IHFL::nL2)
+			recomputeFacilityCosts(fc, multiplier, RP, fnorm, U);
+		//else
+			//recomputeFacilityCosts(fc, multiplier * multiplier * multiplier, RP, fnorm, U);
+			//recomputeFacilityCosts(lambda, fc, 5.0, RP, &IHFL::nL2, U);
 	}
 
 	//Process all points
@@ -465,7 +460,7 @@ void IHFL::clusterizeIHFL(TVector <Point3D>&U, const double fc, TVector <Facilit
 }
 
 
-void IHFL::updateClusters(const int pi, const TVector <Point3D>& points, TVector <Facility>& F, TVector <RegressionPlane>& RP)
+void IHFL::updateClusters(const int i, const TVector <Point3D>& points, TVector <Facility>& F, TVector <RegressionPlane>& RP)
 {
 	//Incremental method, update of the clusterization takes one of four strategies:
 	//   1) Create new facility at p: S1
@@ -474,27 +469,27 @@ void IHFL::updateClusters(const int pi, const TVector <Point3D>& points, TVector
 	//   4) Reallocate parts of clusters (pseudo) nearest to p. Create facility at p + multiple partial reallocations: S4
 
 	//Initialize index
-	int i = 0, i_nearest = -1;
+	int j = 0, idx_nearest = -1;
 
 	//Initial costs for different strategies
 	double c_nearest = std::numeric_limits<float>::max();   //Cost of the nearest facility, strategy S1
-	double c_new = points[pi].fc;					//Cost for creation of the new facility, strategy S2
-	double c_reallocate_clusters = points[pi].fc;			//Cost for the cluster modification (full or partial reassignment to another facility), strategy S3 a) b)
+	double c_new = points[i].fc;					//Cost for creation of the new facility, strategy S2
+	double c_reallocate_clusters = points[i].fc;			//Cost for the cluster modification (full or partial reassignment to another facility), strategy S3 a) b)
 
 	//Browse all facilities
 	TVector <int> reallocate_oper;				//Changed cluster id and type of reassignment operation (false = partial, true = full)
 	for (Facility& f : F)
 	{
 		//Reset sign and shift
-		const int f_uid2 = abs(f.u_id) - 1;
+		const int p_idx2 = abs(f.p_idx) - 1;
 
 		//Norm and pseudonorm
-		const double dist_pf = dist(points[pi].x, points[pi].y, points[pi].z, points[f_uid2].x, points[f_uid2].y, points[f_uid2].z);       //Distance between point p and facility
-		const double dpf = (this->*fnorm)(points[pi], points[f_uid2], RP[pi], RP[f_uid2]);		//Pseudonorm between point p and facility
+		const double dist_pf = dist(points[i].x, points[i].y, points[i].z, points[p_idx2].x, points[p_idx2].y, points[p_idx2].z);       //Distance between point p and facility
+		const double dpf = (this->*fnorm)(points[i], points[p_idx2], RP[i], RP[p_idx2]);		//Pseudonorm between point p and facility
 
 		//Cummulated values
-		double dc_all = points[pi].fc - f.fc;					//Cost diifference: reassignment of all cluster to  p - cost for the old facility deletition
-		double dc_closer = points[pi].fc - dpf;					//Cost difference: reassignment of cluster points closer to p
+		double dc_all = points[i].fc - f.fc;					//Cost diifference: reassignment of all cluster to  p - cost for the old facility deletition
+		double dc_closer = points[i].fc - dpf;					//Cost difference: reassignment of cluster points closer to p
 
 		//Reallocate only according to near facilities
 		if (dist_pf < 3.0 * lambda)
@@ -503,18 +498,18 @@ void IHFL::updateClusters(const int pi, const TVector <Point3D>& points, TVector
 			if (dpf < c_nearest && dpf > 0)  //Actualize distance to the nearest facility
 			{
 				c_nearest = dpf;
-				i_nearest = i;
+				idx_nearest = j;
 			}
 
-			//Browse all points of the facility
-			for (int& c_id : f.Cl_id)
+			//Browse all points ui of the facility
+			for (int& u_idx : f.U_idxs)
 			{
 				//Reset sign and shift of the index
-				const int c_id2 = abs(c_id) - 1;
+				const int u_idx2 = abs(u_idx) - 1;
 
 				//Compute pseudonorms using pointers to member functions
-				const double dup = (this->*fnorm)(points[c_id2], points[pi], RP[c_id2], RP[pi]);           //Pseudonorm of the cluster point u to the proposed new center p
-				const double duf = (this->*fnorm)(points[c_id2], points[f_uid2], RP[c_id2], RP[f_uid2]);       //Pseudonorm of the cluster point u to its cluster center f.u
+				const double dup = (this->*fnorm)(points[u_idx2], points[i], RP[u_idx2], RP[i]);           //Pseudonorm of the cluster point u to the proposed new center p
+				const double duf = (this->*fnorm)(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]);       //Pseudonorm of the cluster point u to its cluster center f.u
 
 				//Current cluster point u is closer to p: cost for the reassignment u to the new center p
 				//Strategy S4, compute new cost increment
@@ -523,12 +518,12 @@ void IHFL::updateClusters(const int pi, const TVector <Point3D>& points, TVector
 					dc_closer += dup - duf;
 
 					//Change sign to plus (reallocate to p)
-					c_id = c_id2 + 1;
+					u_idx = u_idx2 + 1;
 				}
 
 				//Change sign to minus: (connected to old facility)
 				else
-					c_id = -c_id2 - 1;
+					u_idx = -u_idx2 - 1;
 
 				//Cost for the reassignment of any cluster point to p
 				//Strategy S3
@@ -539,25 +534,25 @@ void IHFL::updateClusters(const int pi, const TVector <Point3D>& points, TVector
 			//Strategy S3)
 			if ((dc_all < dc_closer))
 			{
-				c_reallocate_clusters = c_reallocate_clusters + dc_all - points[pi].fc + dpf;	     //Expected cost increment
+				c_reallocate_clusters = c_reallocate_clusters + dc_all - points[i].fc + dpf;	     //Expected cost increment
 
 				//Set +, S3 strategy
-				reallocate_oper.push_back(i + 1);
+				reallocate_oper.push_back(j + 1);
 			}
 
 			//Reallocate part of the cluster to p: is there any improvement?
 			//Strategy S4)
 			else if (dc_closer < dc_all)
 			{
-				c_reallocate_clusters = c_reallocate_clusters + dc_closer - points[pi].fc + dpf;       //Expected increment
+				c_reallocate_clusters = c_reallocate_clusters + dc_closer - points[i].fc + dpf;       //Expected increment
 
 				//Set -, S4 strategy
-				reallocate_oper.push_back(-i - 1);
+				reallocate_oper.push_back(-j - 1);
 			}
 		}
 
-		//Increment i
-		i++;
+		//Increment j
+		j++;
 	}
 
 	//Heuristic decision: find minimum cost increment and choose the optimal strategy (S1-S3 a) b))
@@ -566,23 +561,23 @@ void IHFL::updateClusters(const int pi, const TVector <Point3D>& points, TVector
 	//S1: Create new facility at p is the cheapest
 	if (c_min == c_new)
 	{
-		Facility fac_new(pi + 1, points[pi].fc);
+		Facility fac_new(i + 1, points[i].fc);
 		F.push_back(fac_new);
 	}
 
 	//S2: Connect p to the nearest facility
 	else if (c_min == c_nearest)
 	{
-		F[i_nearest].Cl_id.push_back(pi + 1);
+		F[idx_nearest].U_idxs.push_back(i + 1);
 	}
 
 	//S3 or S4
 	else
 	{
-		//Create new facility at p
-		Facility fac_new(pi + 1, points[pi].fc);
+		//Create new facility fp at p
+		Facility fac_new(i + 1, points[i].fc);
 
-		//Process all cluster affected by the reallocation one by one
+		//Process all clusters affected by the reallocation one by one
 		for (const int& k : reallocate_oper)
 		{
 			//Reset sign and shift
@@ -591,33 +586,33 @@ void IHFL::updateClusters(const int pi, const TVector <Point3D>& points, TVector
 			//Partial realloation: S4
 			if (k < 0)
 			{
-				//Reconnect vertices
-				TVector <int> C_id_old;
-				for (const int& c_id : F[k2].Cl_id)
+				//Reconnect all clients
+				TVector <int> U_old_idx;
+				for (const int & u_idx : F[k2].U_idxs)
 				{
-					//Reconnect to the new cluster
-					if (c_id > 0)
-						fac_new.Cl_id.push_back(abs(c_id));
+					//Reconnect to the new facility
+					if (u_idx > 0)
+						fac_new.U_idxs.push_back(abs(u_idx));
 
-					//Belong to the old cluster
+					//Remain to the old facility
 					else
-						C_id_old.push_back(abs(c_id));
+						U_old_idx.push_back(abs(u_idx));
 				}
 
 				//Connect points to the old facility
-				F[k2].Cl_id = std::move(C_id_old);
+				F[k2].U_idxs = std::move(U_old_idx);
 			}
 
 			//Full reallocation: S3
 			else
 			{
-				//Insert all points to the new facility at p
-				fac_new.Cl_id.insert(fac_new.Cl_id.end(), std::make_move_iterator(F[k2].Cl_id.begin()), std::make_move_iterator(F[k2].Cl_id.end()));
+				//Insert all clients to the new facility fp at p
+				fac_new.U_idxs.insert(fac_new.U_idxs.end(), std::make_move_iterator(F[k2].U_idxs.begin()), std::make_move_iterator(F[k2].U_idxs.end()));
 
-				//Add old facility center to the facility at p
-				fac_new.Cl_id.push_back(F[k2].u_id);
+				//Connect old facility to the new facility fp at p
+				fac_new.U_idxs.push_back(F[k2].p_idx);
 
-				//Mark old cluster for the deletetion
+				//Mark old facilty for the deletetion
 				F[k2].del = true;
 			}
 		}
@@ -642,11 +637,11 @@ double IHFL::computeCost(const TVector <Facility>& F, const TVector <Point3D> &p
 		total_cost += f.fc;
 
 		//Process all connected points
-		const int u_id2 = fabs(f.u_id) - 1;
-		for (const auto c_id : f.Cl_id)
+		const int p_idx2 = fabs(f.p_idx) - 1;
+		for (const auto c_id : f.U_idxs)
 		{
 			const int c_id2 = fabs(c_id) - 1;
-			total_cost += (this->*fnorm)(points[u_id2], points[c_id2], AN[u_id2], AN[c_id2]);
+			total_cost += (this->*fnorm)(points[p_idx2], points[c_id2], AN[p_idx2], AN[c_id2]);
 		}
 	}
 

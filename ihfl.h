@@ -12,7 +12,7 @@
 class IHFL
 {
 	private:
-		bool rec_costs;			//Recompute cost of points according to normal vectors
+		bool non_uniform_cl;		//Non-uniform clusterization (recompute cost of points according to normal vectors)
 		int k;				//Amount of nearest neighbors, estimation of normal vectors
 		double  lambda,			//Radius of the ball
 			mju,			//Isotropic factor
@@ -21,8 +21,8 @@ class IHFL
 
 
 	public:
-		 IHFL(const bool rec_costs_, const int k_, const double lambda_, const double mju_, const double l_, const pfnorm &fnorm_) :
-			rec_costs(rec_costs_), k(k_), lambda(lambda_), mju(mju_), l(l_), fnorm(fnorm_) {}
+		 IHFL(const bool non_uniform_cl_, const int k_, const double lambda_, const double mju_, const double l_, const pfnorm &fnorm_) :
+			non_uniform_cl(non_uniform_cl_), k(k_), lambda(lambda_), mju(mju_), l(l_), fnorm(fnorm_) {}
 		
 		 void generateClusters(const double w, const double h, const double rad, const int nc, const int n, TVector <Point3D>& U);
 		 void generateCone(const double a, const double b, const int n, TVector <Point3D>& U);
@@ -50,7 +50,7 @@ private:
 		 void baseCylinderPoint(const double a, const double b, double& h, double& r, double& t);
 
 		 void updateClusters(const int pi, const TVector <Point3D>& points, TVector <Facility>& F, TVector<RegressionPlane>& RP);
-		 void recomputeFacilityCosts (const double fc, const double crit, double rat, const TVector <RegressionPlane>& RP, const pfnorm& fnorm, TVector <Point3D>& U);
+		 void recomputeFacilityCosts (const double fc, double rat, const TVector <RegressionPlane>& RP, const pfnorm& fnorm, TVector <Point3D>& U);
 		 void getAveragePointNormal(TVector <Point3D>& U, const TVector2D <size_t>& knn_id, TVector <RegressionPlane>& RP);
 };
 

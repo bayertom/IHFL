@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <filesystem>
+#include <format>
 
 #include "pfnorm.h"
 #include "ihfl.h"
@@ -24,10 +25,12 @@ int main(int argc, char* argv[])
 	//std::string file_name = "data\\eth_mid.txt";
 	//std::string file_name = "data\\test_pseudometrics.txt";
 	//std::string file_name = "data\\eth_mid.txt";
+	//std::string file_name = "data\\Cone\\cone_1000.txt";
+	//std::string file_name = "data\\Ferrata\\via_ferrata_xyz_rgb_small.txt"; 
 	//std::string file_name = "data2\\test_pseudometrics.txt";
 
 	//Parameters of the clusterization algorithm
-	bool rec_costs = false, export_dxf = false;
+	bool non_uniform_cl = false, export_dxf = false;
 	int knn = 50, ns = 100000, l = 1;
 	double fc = 0.01, lambda = 0.25, mju = 0.95;
 	pfnorm fnorm = &IHFL::nDFP;
@@ -54,7 +57,7 @@ int main(int argc, char* argv[])
 					//Recompute facility cost according to normals
 					case 'n':
 					{
-						rec_costs = true;
+						non_uniform_cl = true;
 						break;
 					}
 
@@ -211,7 +214,10 @@ int main(int argc, char* argv[])
 	{
 		std::cout << ">> KD subsets loaded (" << file_name_point_tiles.size() << ") ...";
 	}
-	
+
+	//Create file name part unique for all files
+	std::string file_name_part = "_" + fnorm_text + "_l" + std::to_string(l) + "_unif" + std::to_string(!non_uniform_cl) + "_f" + std::format("{:.2f}", fc) + "_dc" + std::format("{:.2f}", lambda);
+
 	//Process point tiles one by one
 	unsigned int i = 0, n_subsets = file_name_point_tiles.size();
 	TVector <Point3D> output_facilities;
@@ -228,10 +234,10 @@ int main(int argc, char* argv[])
 		std::cout << "\nFile: " << f_name << " (" << ++i << "/" << n_subsets << ", " << kd_point_tile.size() << " points)" << '\n';
 
 		//Output files
-		std::string facil_file_subset = f_name + "_" + fnorm_text + "_l" + std::to_string(l) + "_" + method_text + "_f" + std::to_string(fc) + "_dc" + std::to_string(lambda) + "_facil.txt";
-		std::string clients_to_facil_file_subset = f_name + "_" + fnorm_text + "_l" + std::to_string(l) + "_" + method_text + "_f" + std::to_string(fc) + "_dc" + std::to_string(lambda) + "_facil2.txt";
-		std::string dxf_file_subset = f_name + "_" + fnorm_text + "_l" + std::to_string(l) + "_" + method_text + "_f" + std::to_string(fc) + "_dc" + std::to_string(lambda) + ".dxf";
-		std::string result_file_subset = f_name + "_" + fnorm_text + "_l" + std::to_string(l) + "_" + method_text + "_f" + std::to_string(fc) + "_dc" + std::to_string(lambda) + "_results.log";
+            	std::string facil_file_subset = f_name + file_name_part + "_facil.txt";
+		std::string clients_to_facil_file_subset = f_name + file_name_part + "_facil2.txt";
+		std::string dxf_file_subset = f_name + file_name_part + ".dxf";
+		std::string result_file_subset = f_name + file_name_part + "_results.log";
 
 		//Output file with facilities does not exist
 		if (!std::filesystem::exists(facil_file_subset))
@@ -263,7 +269,7 @@ int main(int argc, char* argv[])
 			const clock_t begin_time = clock();
 
 			//Incremental heuristic location (IFL)
-			IHFL clust(rec_costs, knn, lambda, mju, l, fnorm);
+			IHFL clust(non_uniform_cl, knn, lambda, mju, l, fnorm);
 			clust.clusterizeIHFL(kd_point_tile, fc, F, AN);
 			
 			//Statistics
@@ -277,10 +283,13 @@ int main(int argc, char* argv[])
 
 			for (int i = 0; i < F.size(); i++)
 			{
-				output_facilities_tile.push_back(kd_point_tile[F[i].u_id]);
+				output_facilities_tile.push_back(kd_point_tile[abs(F[i].p_idx) - 1]);
 				
-				for (int c_id : F[i].Cl_id)
-					clients_to_facilities_tile[abs(c_id) - 1] = abs(F[i].u_id) - 1;
+				//Browse all connected clients
+				for (int c_id : F[i].U_idxs)
+				{
+					clients_to_facilities_tile[abs(c_id) - 1] = abs(F[i].p_idx) - 1;
+				}
 			}
 
 			//Export clusters to DXF
@@ -309,8 +318,9 @@ int main(int argc, char* argv[])
 		output_facilities.insert(output_facilities.end(), output_facilities_tile.begin(), output_facilities_tile.end());
 	}
 
+
 	//Save output points
-	std::string facil_file = file_name + "_" + fnorm_text + "_l" + std::to_string(l) + "_" + method_text + "_f" + std::to_string(fc) + "_dc" + std::to_string(lambda) + "_facil_all.txt";
+	std::string facil_file = file_name + file_name_part + "_facil_all.txt";
 	IO::savePointCloud(facil_file, output_facilities);
 	
 	std::cout << "Finished... \n";

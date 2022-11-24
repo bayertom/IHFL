@@ -126,7 +126,7 @@ void SplitDataset::createKDPointTiles(const std::string& file_name, const int n_
 			//Remove kd_tile
 			S.pop();
 
-			//Create file name
+			//Create file nameø
 			std::string file_name_kdss = file_name + "_" + std::to_string(kd_tile_top.kd_tile_id) + "_" + std::to_string(kd_tile_top.depth) + "_" + std::to_string(kd_tile_top.dir);
 
 			//Save point tile
