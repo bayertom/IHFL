@@ -6,7 +6,7 @@ struct Point3D
 {
 	int id;					//Point ID
 	double x, y, z;				//Cartesian coordinates
-	double fc;				//Cost
+	double fc;				//Facility cost
 	short r, g, b;				//R, G, B components
 	bool deleted;				//Flag, if a point needs to be deleted
 

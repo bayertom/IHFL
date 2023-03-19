@@ -97,6 +97,52 @@ void IO::savePointCloud(const std::string& file_name, const TVector <Point3D>& U
 }
 
 
+void IO::savePointCloudAndStatistics(const std::string& file_name, const TVector <Point3D>& U, const TVector <int>& NC, const TVector <double>& RAD, const TVector <double>& ABN, const TVector <double>& DFP, const TVector <double>& ASP, const TVector <int>& DIM, const TVector <int>& OVER)
+{
+	//Save point cloud to the file
+	std::string line;
+	std::ofstream file;
+
+	try
+	{
+		//Open file
+		file.open(file_name);
+
+		file << std::fixed;
+
+		//Process all points
+		for (int i = 0; i < U.size(); i++)
+		{
+			//Write coordinates
+			file << std::setprecision(8);
+			file << U[i].x << "  " << U[i].y << "  " << U[i].z << "  " << U[i].fc << "  ";
+
+			//Write r, g, b components
+			file << std::setprecision(0);
+			file << U[i].r << "  " << U[i].g << "  " << U[i].b << " ";
+
+			//Write statistics
+			file << std::setprecision(0);
+			file << NC[i] << "  ";
+
+			file << std::setprecision(8);
+			file << RAD[i] << "  " << ABN[i] << "  " << DFP[i] << "  " << ASP[i] << "  ";
+
+			file << std::setprecision(0);
+			file << DIM[i] << "  " << OVER[i] << '\n';
+		}
+
+		file.close();
+	}
+
+	//Throw exception
+	catch (std::ostream::failure e)
+	{
+		std::cerr << "Can not write the file> :" << file_name << '\n';
+	}
+}
+
+
 void IO::saveClientsToFacilites(const std::string& file_name, const TVector <int>& CL)
 {
 	std::string line;

@@ -71,10 +71,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>E:\Tomas\CPP\IHFL\Eigen;C:\dev\libboost_1_72_0\boost;$(IncludePath)</IncludePath>
+    <IncludePath>E:\Tomas\CPP\IHFL</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>E:\Tomas\CPP\IHFL\Eigen;C:\dev\libboost_1_72_0\boost;$(IncludePath)</IncludePath>
+    <IncludePath>E:\Tomas\CPP\IHFL</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

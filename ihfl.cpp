@@ -11,6 +11,10 @@
 #include "regressionplane.h"
 #include "isfacilitysefordeletion.h"
 
+#include <Eigen/Dense>                               
+#include <Eigen/Sparse>                              
+#include <Eigen/Core>
+
 double IHFL::dist(const double x1, const double y1, const double z1, const double x2, const double y2, const double z2)
 {
 	//Compute Euclidean distance
@@ -637,7 +641,7 @@ double IHFL::computeCost(const TVector <Facility>& F, const TVector <Point3D> &p
 		total_cost += f.fc;
 
 		//Process all connected points
-		const int p_idx2 = fabs(f.p_idx) - 1;
+		const int p_idx2 = abs(f.p_idx) - 1;
 		for (const auto c_id : f.U_idxs)
 		{
 			const int c_id2 = fabs(c_id) - 1;
@@ -646,4 +650,173 @@ double IHFL::computeCost(const TVector <Facility>& F, const TVector <Point3D> &p
 	}
 
 	return total_cost;
+}
+
+void IHFL::clusterStatistics(const TVector <Point3D>& points, const TVector <Facility>& F, const TVector <RegressionPlane>& RP, TVector <int>& NC, TVector <double> &RAD, TVector <double>& ABN, TVector <double>& DFP, TVector <double>& ASP, TVector <int>& DIM, TVector <int>& OVER)
+{
+	//Compute parameters of the cluster
+	for (const auto f : F)
+	{
+		//Browse all points ui of the facility
+		int i = 0;
+		double f_radius = 0, f_abn = 0, f_dfp = 0, f_aspect = -1, f_dim = 0;
+		Eigen::MatrixXd M(f.U_idxs.size(), 3);
+		for (int u_idx : f.U_idxs)
+		{
+			//Reset sign and shift of the index
+			const int u_idx2 = abs(u_idx) - 1;
+			const int p_idx2 = abs(f.p_idx) - 1;
+
+			//Convert clients to matrix
+			M(i, 0) = points[u_idx2].x;
+			M(i, 1) = points[u_idx2].y;
+			M(i, 2) = points[u_idx2].z;
+
+			//Compute pseudonorms
+			f_radius = std::max(nL2(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]), f_radius);
+			f_abn += nABN(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]);
+			f_dfp += nDFP(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]);
+
+			i++;
+		}
+
+		//PCA decomposition
+		if (f.U_idxs.size() > 0)
+		{
+			//PCA analysis
+			Eigen::MatrixXd centered = M.rowwise() - M.colwise().mean();
+			Eigen::MatrixXd cov = centered.adjoint() * centered;
+			Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eig(cov);
+
+			//Eigen vectors and eigen values
+			Eigen::MatrixXd eivect = eig.eigenvectors();
+			Eigen::MatrixXd eival = eig.eigenvalues();
+
+			//Compute cluster aspect
+			f_aspect = (eival(2,0) == 0 ? -1 : eival(1, 0) / eival(2, 0));
+
+			//Sum of eigen values
+			const double lambda_sum = eival(0, 0) + eival(1, 0) + eival(2, 0);
+
+			//Cluster dimension 0
+			if (lambda_sum == 0)
+				f_dim = 0;
+
+			//Cluster dimension: 0 - 3
+			else
+			{
+				//Fractions of eigen values
+				const double lambda1f = eival(0, 0) / lambda_sum;
+				const double lambda2f = eival(1, 0) / lambda_sum;
+				const double lambda3f = eival(2, 0) / lambda_sum;
+
+				//Set cluster dimensions
+				if (lambda3f < 0.01)
+					f_dim = 0;
+				else if (lambda2f < 0.01)
+					f_dim = 1;
+				else if (lambda1f < 0.01)
+					f_dim = 2;
+				else
+					f_dim = 3;
+			}
+		}
+
+		//Store values
+		NC.push_back(f.U_idxs.size());
+		RAD.push_back(f_radius);
+		ABN.push_back(f_abn / std::max(1, (int)f.U_idxs.size()));
+		DFP.push_back(f_dfp / std::max(1, (int)f.U_idxs.size()));
+		ASP.push_back(f_aspect);
+		DIM.push_back(f_dim);
+
+		/*
+		Eigen::MatrixXd mat(points.size(), 3);
+
+		for (int i = 0; i < points.size(); i++)
+		{
+			mat(i, 0) = points[i].x;
+			mat(i, 1) = points[i].y;
+			mat(i, 2) = points[i].z;
+		}
+		*/
+		/*
+		double l = 1, w = 2, h = 3;
+		Eigen::MatrixXd mat(1, 3);
+		mat(0, 0) = 0;
+		/*
+		mat(0, 1) = 0;
+		mat(0, 2) = 0;
+
+		mat(1, 0) = l;
+		mat(1, 1) = 0;
+		mat(1, 2) = 0;
+
+		mat(2, 0) = 0;
+		mat(2, 1) = w;
+		mat(2, 2) = 0;
+
+		mat(3, 0) = l;
+		mat(3, 1) = w;
+		mat(3, 2) = 0;
+
+		mat(4, 0) = 0;
+		mat(4, 1) = 0;
+		mat(4, 2) = h;
+
+		mat(5, 0) = l;
+		mat(5, 1) = 0;
+		mat(5, 2) = h;
+
+		mat(6, 0) = 0;
+		mat(6, 1) = w;
+		mat(6, 2) = h;
+
+		mat(7, 0) = l;
+		mat(7, 1) = w;
+		mat(7, 2) = h;
+		
+
+		Eigen::MatrixXd centered = mat.rowwise() - mat.colwise().mean();
+		Eigen::MatrixXd cov = centered.adjoint() * centered;
+		Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eig(cov);
+		Eigen::MatrixXd eivect = eig.eigenvectors();
+		Eigen::MatrixXd eival = eig.eigenvalues();
+
+		std::cout << eivect;
+		std::cout << eival;
+		*/
+	}
+
+	//Compute overlap ratio
+	OVER.resize(F.size());
+	std::fill(OVER.begin(), OVER.end(), 0);
+
+	//Process facilities one by one
+	for (int i = 0; i < F.size(); i++)
+	{
+		//Reset sign and shift of the index
+		const int p_idx2 = abs(F[i].p_idx) - 1;
+
+		//Check all facilities
+		for (int j = 0; j < F.size(); j++)
+		{
+			if (i != j)
+			{
+				//Take all connected points
+				for (int k = 0; k < F[j].U_idxs.size(); k++)
+				{
+					const int u_idx2 = abs(F[j].U_idxs[k]) - 1;
+
+					//Increment overlap ratio
+					const double d = nL2(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]);
+
+					if (d < RAD[i])
+						OVER[i] = OVER[i] + 1;
+
+				}
+			}
+		}
+	}
+	
 }

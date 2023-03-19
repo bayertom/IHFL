@@ -1,11 +1,14 @@
 #ifndef IHFL_H
 #define IHFL_H
 
+#include <tuple>
+
 #include "point3d.h"
 #include "pfnorm.h"
 #include "regressionplane.h"
 #include "tvector2D.h"
 #include "facility.h"
+
 
 //Incremental heuristic facility location algorithm
 //Clustering according to the given (pseudo) norm
@@ -29,6 +32,7 @@ class IHFL
 		 void generateCylinder(const double a, const double b, const int n, TVector <Point3D>& U);
 		 void generateCube(const double a, const int n, TVector <Point3D>& U);
 		 void clusterizeIHFL(TVector <Point3D>& U, const double fc, TVector <Facility>& F, TVector <RegressionPlane> & RP);
+		 void clusterStatistics(const TVector <Point3D>& points, const TVector <Facility>& F, const TVector <RegressionPlane>& RP, TVector <int>& NC, TVector <double>& RAD, TVector <double>& ABN, TVector <double>& DFP, TVector <double>& ASP, TVector <int>& DIM, TVector <int>& OVER);
 
 		 double nL2(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
 		 double nDIS(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);

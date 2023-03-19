@@ -7,7 +7,6 @@ struct Facility {
 	double fc;				//Facility cost, non-uniform clusterization
 	TVector <int> U_idxs;			//Connected clients ui, indexes of points
 	bool del;				//Facility marked as deleted
-
 	Facility(const unsigned int& p_idx_, const double& fc_) : p_idx(p_idx_), fc(fc_), del(false) {}
 };
 

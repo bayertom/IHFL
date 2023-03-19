@@ -25,17 +25,22 @@ int main(int argc, char* argv[])
 	//std::string file_name = "data\\eth_mid.txt";
 	//std::string file_name = "data\\test_pseudometrics.txt";
 	//std::string file_name = "data\\eth_mid.txt";
-	//std::string file_name = "data\\Cone\\cone_1000.txt";
+	//std::string file_name = "data\\Cone\\cone_10000.txt";
 	//std::string file_name = "data\\Ferrata\\via_ferrata_xyz_rgb_small.txt"; 
 	//std::string file_name = "data2\\test_pseudometrics.txt";
 
 	//Parameters of the clusterization algorithm
-	bool non_uniform_cl = false, export_dxf = false;
+	bool non_uniform_cl = false, export_dxf = false, cluster_statistics = false;
 	int knn = 50, ns = 100000, l = 1;
 	double fc = 0.01, lambda = 0.25, mju = 0.95;
 	pfnorm fnorm = &IHFL::nDFP;
 	std::string file_name, fnorm_text = "dfp", method_text = "ihfl";
-
+	/*
+	IHFL clust(non_uniform_cl, cluster_statistics, knn, lambda, mju, l, fnorm);
+	TVector <Point3D> U;
+	clust.generateCone(10, 5, 1000, U);
+	IO::savePointCloud("E:\\Tomas\\CPP\\IHFL\\cone2.txt", U);
+	*/
 	//Process command line parameters
 	while (--argc > 0)
 	{
@@ -54,10 +59,17 @@ int main(int argc, char* argv[])
 						break;
 					}
 
-					//Recompute facility cost according to normals
+					//Non-uniform clusterization, recompute facility costs according to the normals
 					case 'n':
 					{
 						non_uniform_cl = true;
+						break;
+					}
+
+					//Compute parameters of the clusters
+					case 's':
+					{
+						cluster_statistics = true;
 						break;
 					}
 
@@ -235,13 +247,15 @@ int main(int argc, char* argv[])
 
 		//Output files
             	std::string facil_file_subset = f_name + file_name_part + "_facil.txt";
+		std::string facil_file_subset_stat = f_name + file_name_part + "_facil_stat.txt";
 		std::string clients_to_facil_file_subset = f_name + file_name_part + "_facil2.txt";
 		std::string dxf_file_subset = f_name + file_name_part + ".dxf";
 		std::string result_file_subset = f_name + file_name_part + "_results.log";
 
+
 		//Output file with facilities does not exist
 		if (!std::filesystem::exists(facil_file_subset))
-		{			
+		{
 			//Find extreme points
 			const Point3D p_xmax = *std::max_element(kd_point_tile.begin(), kd_point_tile.end(), SortPoints3DByX());
 			const Point3D p_xmin = *std::min_element(kd_point_tile.begin(), kd_point_tile.end(), SortPoints3DByX());
@@ -249,7 +263,7 @@ int main(int argc, char* argv[])
 			const Point3D p_ymin = *std::min_element(kd_point_tile.begin(), kd_point_tile.end(), SortPoints3DByY());
 			const Point3D p_zmax = *std::max_element(kd_point_tile.begin(), kd_point_tile.end(), SortPoints3DByZ());
 			const Point3D p_zmin = *std::min_element(kd_point_tile.begin(), kd_point_tile.end(), SortPoints3DByZ());
-			
+
 			//Get first point ID
 			unsigned int ids = kd_point_tile.front().id;
 
@@ -261,7 +275,6 @@ int main(int argc, char* argv[])
 				kd_point_tile[i].id = ids + i;
 
 			//Apply facility location clusterization
-
 			TVector <Facility> F;
 			TVector <RegressionPlane> AN;
 
@@ -271,7 +284,7 @@ int main(int argc, char* argv[])
 			//Incremental heuristic location (IFL)
 			IHFL clust(non_uniform_cl, knn, lambda, mju, l, fnorm);
 			clust.clusterizeIHFL(kd_point_tile, fc, F, AN);
-			
+
 			//Statistics
 			const double time = (clock() - begin_time) / (CLOCKS_PER_SEC);
 			std::cout << "(time: " << time << "s, ";
@@ -284,7 +297,7 @@ int main(int argc, char* argv[])
 			for (int i = 0; i < F.size(); i++)
 			{
 				output_facilities_tile.push_back(kd_point_tile[abs(F[i].p_idx) - 1]);
-				
+
 				//Browse all connected clients
 				for (int c_id : F[i].U_idxs)
 				{
@@ -297,7 +310,19 @@ int main(int argc, char* argv[])
 				DXFExport::exportClustersToDXF(dxf_file_subset, F, kd_point_tile, AN);
 
 			//Save facilities to txt file
-			IO::savePointCloud(facil_file_subset, output_facilities_tile);
+			if (cluster_statistics)
+			{
+				TVector <int> NC, OVER, DIM;
+				TVector <double> RAD, ABN, DFP, ASP;
+
+				//Compute parameters of clusters
+				clust.clusterStatistics(kd_point_tile, F, AN, NC, RAD, ABN, DFP, ASP, DIM, OVER);
+
+				IO::savePointCloudAndStatistics(facil_file_subset_stat, output_facilities_tile, NC, RAD, ABN, DFP, ASP, DIM, OVER);
+			}
+
+			else
+				IO::savePointCloud(facil_file_subset, output_facilities_tile);
 
 			//Save facilities with assigned point
 			IO::saveClientsToFacilites(clients_to_facil_file_subset, clients_to_facilities_tile);
