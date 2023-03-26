@@ -15,6 +15,7 @@
 #include "sortpoints3dbyz.h"
 #include "sortpointsto3dbins.h"
 #include "dxfexport.h"
+//#include "tvector.h"
 
 
 int main(int argc, char* argv[])
@@ -232,6 +233,8 @@ int main(int argc, char* argv[])
 
 	//Process point tiles one by one
 	unsigned int i = 0, n_subsets = file_name_point_tiles.size();
+	TVector <int> NC_all, OVER_all, DIM_all;
+	TVector <double> RAD_all, ABN_all, DFP_all, ASP_all;
 	TVector <Point3D> output_facilities;
 	for (const auto &f_name : file_name_point_tiles)
 	{
@@ -318,9 +321,18 @@ int main(int argc, char* argv[])
 				//Compute parameters of clusters
 				clust.clusterStatistics(kd_point_tile, F, AN, NC, RAD, ABN, DFP, ASP, DIM, OVER);
 
+				//Add results to the list
+				NC_all.insert(NC_all.end(), NC.begin(), NC.end());
+				OVER_all.insert(OVER_all.end(), OVER.begin(), OVER.end());
+				DIM_all.insert(DIM_all.end(), DIM.begin(), DIM.end());
+				RAD_all.insert(RAD_all.end(), RAD.begin(), RAD.end());
+				ABN_all.insert(ABN_all.end(), ABN.begin(), ABN.end());
+				DFP_all.insert(DFP_all.end(), DFP.begin(), DFP.end());
+				ASP_all.insert(ASP_all.end(), ASP.begin(), ASP.end());
+
+				//Store facilities and their properties for the tile
 				IO::savePointCloudAndStatistics(facil_file_subset_stat, output_facilities_tile, NC, RAD, ABN, DFP, ASP, DIM, OVER);
 			}
-
 			else
 				IO::savePointCloud(facil_file_subset, output_facilities_tile);
 
@@ -344,9 +356,14 @@ int main(int argc, char* argv[])
 	}
 
 
-	//Save output points
+	//Save all facilities and therir properties into file
 	std::string facil_file = file_name + file_name_part + "_facil_all.txt";
-	IO::savePointCloud(facil_file, output_facilities);
+	
+	if (cluster_statistics)
+		IO::savePointCloudAndStatistics(facil_file, output_facilities, NC_all, RAD_all, ABN_all, DFP_all, ASP_all, DIM_all, OVER_all);
+
+	else
+		IO::savePointCloud(facil_file, output_facilities);
 	
 	std::cout << "Finished... \n";
 
