@@ -1,1 +1,0 @@
-IHFL "via_ferrata_xyz_rgb_small.txt" +norm=abn +fc=0.05 +lambda=0.90 +mju=0.95 +l=1 +knn=50 +ns=100000 -n -e
