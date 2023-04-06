@@ -234,7 +234,7 @@ int main(int argc, char* argv[])
 	//Process point tiles one by one
 	unsigned int i = 0, n_subsets = file_name_point_tiles.size();
 	TVector <int> NC_all, OVER_all, DIM_all;
-	TVector <double> RAD_all, ABN_all, DFP_all, ASP_all;
+	TVector <double> RAD_all, ABN_all, DFP_all, ASP_all, SLO_all;
 	TVector <Point3D> output_facilities;
 	for (const auto &f_name : file_name_point_tiles)
 	{
@@ -316,10 +316,10 @@ int main(int argc, char* argv[])
 			if (cluster_statistics)
 			{
 				TVector <int> NC, OVER, DIM;
-				TVector <double> RAD, ABN, DFP, ASP;
+				TVector <double> RAD, ABN, DFP, ASP, SLO;
 
 				//Compute parameters of clusters
-				clust.clusterStatistics(kd_point_tile, F, AN, NC, RAD, ABN, DFP, ASP, DIM, OVER);
+				clust.clusterStatistics(kd_point_tile, F, AN, NC, RAD, ABN, DFP, ASP, DIM, OVER, SLO);
 
 				//Add results to the list
 				NC_all.insert(NC_all.end(), NC.begin(), NC.end());
@@ -329,9 +329,10 @@ int main(int argc, char* argv[])
 				ABN_all.insert(ABN_all.end(), ABN.begin(), ABN.end());
 				DFP_all.insert(DFP_all.end(), DFP.begin(), DFP.end());
 				ASP_all.insert(ASP_all.end(), ASP.begin(), ASP.end());
+				SLO_all.insert(SLO_all.end(), SLO.begin(), SLO.end());
 
 				//Store facilities and their properties for the tile
-				IO::savePointCloudAndStatistics(facil_file_subset_stat, output_facilities_tile, NC, RAD, ABN, DFP, ASP, DIM, OVER);
+				IO::savePointCloudAndStatistics(facil_file_subset_stat, output_facilities_tile, NC, RAD, ABN, DFP, ASP, DIM, OVER, SLO);
 			}
 			else
 				IO::savePointCloud(facil_file_subset, output_facilities_tile);
@@ -360,7 +361,7 @@ int main(int argc, char* argv[])
 	std::string facil_file = file_name + file_name_part + "_facil_all.txt";
 	
 	if (cluster_statistics)
-		IO::savePointCloudAndStatistics(facil_file, output_facilities, NC_all, RAD_all, ABN_all, DFP_all, ASP_all, DIM_all, OVER_all);
+		IO::savePointCloudAndStatistics(facil_file, output_facilities, NC_all, RAD_all, ABN_all, DFP_all, ASP_all, DIM_all, OVER_all, SLO_all);
 
 	else
 		IO::savePointCloud(facil_file, output_facilities);

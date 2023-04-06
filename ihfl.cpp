@@ -652,7 +652,7 @@ double IHFL::computeCost(const TVector <Facility>& F, const TVector <Point3D> &p
 	return total_cost;
 }
 
-void IHFL::clusterStatistics(const TVector <Point3D>& points, const TVector <Facility>& F, const TVector <RegressionPlane>& RP, TVector <int>& NC, TVector <double> &RAD, TVector <double>& ABN, TVector <double>& DFP, TVector <double>& ASP, TVector <int>& DIM, TVector <int>& OVER)
+void IHFL::clusterStatistics(const TVector <Point3D>& points, const TVector <Facility>& F, const TVector <RegressionPlane>& RP, TVector <int>& NC, TVector <double> &RAD, TVector <double>& ABN, TVector <double>& DFP, TVector <double>& ASP, TVector <int>& DIM, TVector <int>& OVER, TVector <double>& SLO)
 {
 	//Compute parameters of the cluster
 	for (const auto f : F)
@@ -661,11 +661,15 @@ void IHFL::clusterStatistics(const TVector <Point3D>& points, const TVector <Fac
 		int i = 0;
 		double f_radius = 0, f_abn = 0, f_dfp = 0, f_aspect = -1, f_dim = 0;
 		Eigen::MatrixXd M(f.U_idxs.size(), 3);
+		
+		//Reset sign and shift of the index
+		const int p_idx2 = abs(f.p_idx) - 1;
+
+		//Process all clients
 		for (int u_idx : f.U_idxs)
 		{
 			//Reset sign and shift of the index
 			const int u_idx2 = abs(u_idx) - 1;
-			const int p_idx2 = abs(f.p_idx) - 1;
 
 			//Convert clients to matrix
 			M(i, 0) = points[u_idx2].x;
@@ -711,13 +715,16 @@ void IHFL::clusterStatistics(const TVector <Point3D>& points, const TVector <Fac
 				const double lambda3f = eival(2, 0) / lambda_sum;
 
 				//Set cluster dimensions
-				if (lambda3f < 0.01)
+				if (lambda3f < 0.01)		//Point
 					f_dim = 0;
-				else if (lambda2f < 0.01)
+
+				else if (lambda2f < 0.01)	//Line	
 					f_dim = 1;
-				else if (lambda1f < 0.01)
+
+				else if (lambda1f < 0.01)	//Circle
 					f_dim = 2;
-				else
+
+				else				//Sphere
 					f_dim = 3;
 			}
 		}
@@ -729,6 +736,11 @@ void IHFL::clusterStatistics(const TVector <Point3D>& points, const TVector <Fac
 		DFP.push_back(f_dfp / std::max(1, (int)f.U_idxs.size()));
 		ASP.push_back(f_aspect);
 		DIM.push_back(f_dim);
+
+		//Compute slope
+		const double norm = sqrt(RP[p_idx2].a * RP[p_idx2].a + RP[p_idx2].b * RP[p_idx2].b + RP[p_idx2].c * RP[p_idx2].c);
+		const double slope = acos(RP[p_idx2].c / norm) * 180 / std::numbers::pi;
+		SLO.push_back(slope);
 
 		/*
 		Eigen::MatrixXd mat(points.size(), 3);

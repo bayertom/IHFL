@@ -97,7 +97,7 @@ void IO::savePointCloud(const std::string& file_name, const TVector <Point3D>& U
 }
 
 
-void IO::savePointCloudAndStatistics(const std::string& file_name, const TVector <Point3D>& U, const TVector <int>& NC, const TVector <double>& RAD, const TVector <double>& ABN, const TVector <double>& DFP, const TVector <double>& ASP, const TVector <int>& DIM, const TVector <int>& OVER)
+void IO::savePointCloudAndStatistics(const std::string& file_name, const TVector <Point3D>& U, const TVector <int>& NC, const TVector <double>& RAD, const TVector <double>& ABN, const TVector <double>& DFP, const TVector <double>& ASP, const TVector <int>& DIM, const TVector <int>& OVER, const TVector <double>& SLO)
 {
 	//Save point cloud to the file
 	std::string line;
@@ -129,7 +129,11 @@ void IO::savePointCloudAndStatistics(const std::string& file_name, const TVector
 			file << RAD[i] << "  " << ABN[i] << "  " << DFP[i] << "  " << ASP[i] << "  ";
 
 			file << std::setprecision(0);
-			file << DIM[i] << "  " << OVER[i] << '\n';
+			file << DIM[i] << "  " << OVER[i] << "  ";
+
+			//Write slope
+			file << std::setprecision(6);
+			file << SLO[i] << '\n';
 		}
 
 		file.close();
