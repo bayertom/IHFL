@@ -616,7 +616,7 @@ void IHFL::updateClusters(const int i, const TVector <Point3D>& points, TVector 
 				//Connect old facility to the new facility fp at p
 				fac_new.U_idxs.push_back(F[k2].p_idx);
 
-				//Mark old facilty for the deletetion
+				//Mark old facility for the deletetion
 				F[k2].del = true;
 			}
 		}
