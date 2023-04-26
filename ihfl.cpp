@@ -1,4 +1,25 @@
-﻿#include "ihfl.h"
+﻿// Description: Incremental heuristic facility location clustering
+
+// Copyright (c) 2021 - 2023
+// Tomas Bayer
+// Charles University in Prague, Faculty of Science
+// bayertom@natur.cuni.cz
+
+// This library is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library. If not, see <http://www.gnu.org/licenses/>.
+
+
+#include "ihfl.h"
 
 #include <vector>
 #include <iostream>
@@ -417,7 +438,7 @@ void IHFL::getAveragePointNormal(TVector <Point3D>& U, const TVector2D <size_t>&
 }
 
 
-void IHFL::clusterizeIHFL(TVector <Point3D>&U, const double fc, TVector <Facility>&F, TVector <RegressionPlane> &RP)
+void IHFL::clusterizeIHFL(TVector <Point3D>&U, const double fc, const GridIndexing& gi, TVector2D <Facility> &FG, TVector <RegressionPlane> &RP)
 {
 	//Perform incremental heuristic facility clustering by (IHFL) according to a given norm
 	//Proposed incremental algorithms selecting one of four strategies
@@ -449,22 +470,27 @@ void IHFL::clusterizeIHFL(TVector <Point3D>&U, const double fc, TVector <Facilit
 
 	//First point becomes the facility
 	Facility f0(U[0].id + 1, U[0].fc);
-	F.push_back(f0);
+
+	//Compute its grid index (position in the 3D grid)
+	int idx_p = gi.get1DIndex(U[0]);
+
+	//Add facility to the grid index structure
+	FG[idx_p].push_back(f0);
 
 	//Proces remaining points one by one
 	for (int i = 1; i < n; i++)
 	{
-		//Print 
+		//Print status
 		if (i % (25000) == 0)
 			std::cout << i << " ";
 
 		//Update clusters using the IHFL method, heuristic approach
-		updateClusters(i, U, F, RP);
+		updateClusters(i, U, RP, gi, FG);
 	}
 }
 
 
-void IHFL::updateClusters(const int i, const TVector <Point3D>& points, TVector <Facility>& F, TVector <RegressionPlane>& RP)
+void IHFL::updateClusters(const int i, const TVector <Point3D>& points, const TVector <RegressionPlane>& RP, const GridIndexing& gi, TVector2D <Facility >& FG)
 {
 	//Incremental method, update of the clusterization takes one of four strategies:
 	//   1) Create new facility at p: S1
@@ -472,107 +498,130 @@ void IHFL::updateClusters(const int i, const TVector <Point3D>& points, TVector 
 	//   3) Reallocate all clusters (pseudo) nearest to p. Create facility at p + multiple full reallocations: S3
 	//   4) Reallocate parts of clusters (pseudo) nearest to p. Create facility at p + multiple partial reallocations: S4
 
-	//Initialize index
-	int j = 0, idx_nearest = -1;
+	//Initialize index of the nearest cluster
+	std::pair<int, int> idx_fac_nearest = { -1, -1 };
 
 	//Initial costs for different strategies
 	double c_nearest = std::numeric_limits<float>::max();									//Cost of the nearest facility, strategy S1
 	double c_new = points[i].fc;												//Cost for creation of the new facility, strategy S2
-	double c_reallocate_clusters = points[i].fc;										//Cost for the cluster modification (full or partial reassignment to another facility), strategy S3 a) b)
+	double c_reallocate_facilities = points[i].fc;										//Cost for the cluster modification (full or partial reassignment to another facility), strategy S3 a) b)
 
-	//Browse all facilities
-	TVector <int> reallocate_oper;												//Changed cluster id and type of reassignment operation (negative = partial, positive = full)
-	for (Facility& f : F)
+	//Get grid index of the added point
+	int idx_p = gi.get1DIndex(points[i]);
+
+	//Get indices of all facilities in the adjacent cells of the grid
+	TVector <int> idxs_fac = gi.getAdjacentIndices(points[i]);
+
+	//Process all facilities in the adjacent cells of the grid
+	TVector <std::pair <int, int> > reallocate_facilities;
+	for (int &idx_fac : idxs_fac)
 	{
-		//Reset sign and shift
-		const int p_idx2 = abs(f.p_idx) - 1;
-
-		//Norm and pseudonorm
-		const double dist_pf = dist(points[i].x, points[i].y, points[i].z, points[p_idx2].x, points[p_idx2].y, points[p_idx2].z);       //Distance between point p and facility
-		const double dpf = (this->*fnorm)(points[i], points[p_idx2], RP[i], RP[p_idx2]);				//Pseudonorm between point p and facility
-
-		//Cummulated values
-		double dc_all = points[i].fc - f.fc;										//Cost diifference: reassignment of all cluster to  p - cost for the old facility deletition
-		double dc_closer = points[i].fc - dpf;										//Cost difference: reassignment of cluster points closer to p
-
-		//Reallocate only according to near facilities
-		if (dist_pf < 3.0 * lambda)
+		//Process all facilities in the same bin
+		for (int j = 0; j < FG[idx_fac].size(); j++)
 		{
-			//Distance point and the current facility: Strategy S1
-			if (dpf < c_nearest && dpf > 0)										//Actualize distance to the nearest facility
+			//Get facility
+			Facility & fac = FG[idx_fac][j];
+
+			//Reset sign and shift
+			const int p_idx2 = abs(fac.p_idx) - 1;
+
+			//Norm and pseudonorm
+			const double dist_pf = dist(points[i].x, points[i].y, points[i].z, points[p_idx2].x, points[p_idx2].y, points[p_idx2].z);       //Distance between point p and facility
+			const double dpf = (this->*fnorm)(points[i], points[p_idx2], RP[i], RP[p_idx2]);				//Pseudonorm between point p and facility
+
+			//Cummulated values
+			double dc_all = points[i].fc - fac.fc;										//Cost diifference: reassignment of all cluster to  p - cost for the old facility deletition
+			double dc_closer = points[i].fc - dpf;										//Cost difference: reassignment of cluster points closer to p
+
+			//Reallocate only according to near facilities
+			if (dist_pf < 3.0 * lambda)
 			{
-				c_nearest = dpf;
-				idx_nearest = j;
-			}
-
-			//Browse all points ui of the facility
-			for (int& u_idx : f.U_idxs)
-			{
-				//Reset sign and shift of the index
-				const int u_idx2 = abs(u_idx) - 1;
-
-				//Compute pseudonorms using pointers to member functions
-				const double dup = (this->*fnorm)(points[u_idx2], points[i], RP[u_idx2], RP[i]);		//Pseudonorm of the cluster point u to the proposed new center p
-				const double duf = (this->*fnorm)(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]);	//Pseudonorm of the cluster point u to its cluster center f.u
-
-				//Current cluster point u is closer to p: cost for the reassignment u to the new center p
-				//Strategy S4, compute new cost increment
-				if (dup < duf)
+				//Distance point and the current facility: Strategy S1
+				if (dpf < c_nearest && dpf > 0)										//Actualize distance to the nearest facility
 				{
-					dc_closer += dup - duf;
-
-					//Change sign to plus (reallocate to p)
-					u_idx = u_idx2 + 1;
+					//Actualize cost
+					c_nearest = dpf;
+					
+					//Store facility ID
+					idx_fac_nearest.first = idx_fac;
+					idx_fac_nearest.second = j;
 				}
 
-				//Change sign to minus: (connected to old facility)
-				else
-					u_idx = -u_idx2 - 1;
+				//Browse all points ui of the facility
+				for (int& u_idx : fac.U_idxs)
+				{
+					//Reset sign and shift of the index
+					const int u_idx2 = abs(u_idx) - 1;
 
-				//Cost for the reassignment of any cluster point to p
-				//Strategy S3
-				dc_all += dup - duf;
-			}
+					//Compute pseudonorms using pointers to member functions
+					const double dup = (this->*fnorm)(points[u_idx2], points[i], RP[u_idx2], RP[i]);		//Pseudonorm of the cluster point u to the proposed new center p
+					const double duf = (this->*fnorm)(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]);	//Pseudonorm of the cluster point u to its cluster center f.u
 
-			//Entire cluster is reallocated to p: does the newly created cluster at p decrease the cost?
-			//Strategy S3)
-			if ((dc_all < dc_closer))
-			{
-				c_reallocate_clusters = c_reallocate_clusters + dc_all - points[i].fc + dpf;			//Expected cost increment
+					//Current facility point u is closer to p: cost for the reassignment u to the new center p
+					//Strategy S4, compute new cost increment
+					if (dup < duf)
+					{
+						//Cost difference
+						dc_closer += dup - duf;
 
-				//Set +, S3 strategy
-				reallocate_oper.push_back(j + 1);
-			}
+						//Change sign to plus (reallocate to p)
+						u_idx = abs(u_idx2) + 1;
+					}
 
-			//Reallocate part of the cluster to p: is there any improvement?
-			//Strategy S4)
-			else if (dc_closer < dc_all)
-			{
-				c_reallocate_clusters = c_reallocate_clusters + dc_closer - points[i].fc + dpf;			//Expected cost increment
+					//Change sign to minus: (connected to old facility)
+					else
+						u_idx = -abs(u_idx2) - 1;
 
-				//Set -, S4 strategy
-				reallocate_oper.push_back(-j - 1);
+					//Cost for the reassignment of any facility point to p
+					//Strategy S3
+					dc_all += dup - duf;
+				}
+
+				//Entire facility is reallocated to p: does the newly created cluster at p decrease the cost?
+				//Strategy S3)
+				if ((dc_all < dc_closer))
+				{
+					//Cost difference
+					c_reallocate_facilities = c_reallocate_facilities + dc_all - points[i].fc + dpf;			//Expected cost increment
+
+					//Change facility ID to plus
+					fac.p_idx = abs(fac.p_idx);
+
+					//Set ID of the reallocated cluster
+					reallocate_facilities.push_back(std::pair<int, int>(idx_fac, j));
+				}
+
+				//Reallocate part of the facility to p: is there any improvement?
+				//Strategy S4)
+				else if (dc_closer < dc_all)
+				{
+					//Cost difference
+					c_reallocate_facilities = c_reallocate_facilities + dc_closer - points[i].fc + dpf;			//Expected cost increment
+
+					//Change facility ID to minus
+					fac.p_idx = -abs(fac.p_idx);
+
+					//Set ID of the reallocated facility
+					reallocate_facilities.push_back(std::pair<int, int>(idx_fac, j));
+				}
 			}
 		}
-
-		//Increment j
-		j++;
 	}
 
 	//Heuristic decision: find minimum cost increment and choose the optimal strategy (S1-S3 a) b))
-	const double c_min = std::min(c_new, std::min(c_nearest, c_reallocate_clusters));
+	const double c_min = std::min(c_new, std::min(c_nearest, c_reallocate_facilities));
 
-	//S1: Create new facility at p is the cheapest
+	//S1: Create new facility at p
 	if (c_min == c_new)
 	{
 		Facility fac_new(i + 1, points[i].fc);
-		F.push_back(fac_new);
+		FG[idx_p].push_back(fac_new);
 	}
 
 	//S2: Connect p to the nearest facility
 	else if (c_min == c_nearest)
 	{
-		F[idx_nearest].U_idxs.push_back(i + 1);
+		FG[idx_fac_nearest.first][idx_fac_nearest.second].U_idxs.push_back(i + 1);
 	}
 
 	//S3 or S4
@@ -581,18 +630,15 @@ void IHFL::updateClusters(const int i, const TVector <Point3D>& points, TVector 
 		//Create new facility fp at p
 		Facility fac_new(i + 1, points[i].fc);
 
-		//Process all clusters affected by the reallocation one by one
-		for (const int& k : reallocate_oper)
+		//Process all facilities affected by the reallocation one by one
+		for (const auto& k : reallocate_facilities)
 		{
-			//Reset sign and shift
-			const int k2 = abs(k) - 1;
-
 			//Partial realloation: S4
-			if (k < 0)
+			if (FG[k.first][k.second].p_idx < 0)
 			{
 				//Reconnect all clients
 				TVector <int> U_old_idxs;
-				for (const int & u_idx : F[k2].U_idxs)
+				for (const int& u_idx : FG[k.first][k.second].U_idxs)
 				{
 					//Reconnect client to the new facility
 					if (u_idx > 0)
@@ -604,29 +650,30 @@ void IHFL::updateClusters(const int i, const TVector <Point3D>& points, TVector 
 				}
 
 				//Connect remaining points to the old facility (faster then delete)
-				F[k2].U_idxs = std::move(U_old_idxs);
+				FG[k.first][k.second].U_idxs = std::move(U_old_idxs);
 			}
 
 			//Full reallocation: S3
 			else
 			{
 				//Connect all clients of the old facility to the new facility fp at p
-				fac_new.U_idxs.insert(fac_new.U_idxs.end(), std::make_move_iterator(F[k2].U_idxs.begin()), std::make_move_iterator(F[k2].U_idxs.end()));
+				fac_new.U_idxs.insert(fac_new.U_idxs.end(), std::make_move_iterator(FG[k.first][k.second].U_idxs.begin()), std::make_move_iterator(FG[k.first][k.second].U_idxs.end()));
 
 				//Connect old facility to the new facility fp at p
-				fac_new.U_idxs.push_back(F[k2].p_idx);
+				fac_new.U_idxs.push_back(abs(FG[k.first][k.second].p_idx));
 
 				//Mark old facility for the deletetion
-				F[k2].del = true;
+				FG[k.first][k.second].del = true;
 			}
 		}
 
 		//Add new facility at p to the list
-		F.push_back(fac_new);
+		FG[idx_p].push_back(fac_new);
 	}
 
-	//Delete marked facilities of the old cluster (now it is reallocated)
-	F.erase(std::remove_if(F.begin(), F.end(), IsFacilitySetForDeletion()), F.end());
+	//Delete marked old facilities (now they are reallocated)
+	for (const int & idx_fac : idxs_fac)
+		FG[idx_fac].erase(std::remove_if(FG[idx_fac].begin(), FG[idx_fac].end(), IsFacilitySetForDeletion()), FG[idx_fac].end());
 }
 
 
@@ -653,183 +700,135 @@ double IHFL::computeCost(const TVector <Facility>& F, const TVector <Point3D> &p
 }
 
 
-void IHFL::clusterStatistics(const TVector <Point3D>& points, const TVector <Facility>& F, const TVector <RegressionPlane>& RP, TVector <int>& NC, TVector <double> &RAD, TVector <double>& ABN, TVector <double>& DFP, TVector <double>& ASP, TVector <int>& DIM, TVector <int>& OVER, TVector <double>& SLO)
+void IHFL::clusterStatistics(const TVector <Point3D>& points, const TVector2D <Facility> &FG, const GridIndexing& gi, const TVector <RegressionPlane>& RP, TVector <int>& NC, TVector <double> &RAD, TVector <double>& ABN, TVector <double>& DFP, TVector <double>& ASP, TVector <int>& DIM, TVector <int>& OVER, TVector <double>& SLO)
 {
 	//Compute parameters of the cluster
-	for (const auto f : F)
-	{
-		//Browse all points ui of the facility
-		int i = 0;
-		double f_radius = 0, f_abn = 0, f_dfp = 0, f_aspect = -1, f_dim = 0;
-		Eigen::MatrixXd M(f.U_idxs.size(), 3);
-		
-		//Reset sign and shift of the index
-		const int p_idx2 = abs(f.p_idx) - 1;
-
-		//Process all clients
-		for (int u_idx : f.U_idxs)
+	for (const auto &fg : FG)
+	{ 
+		//Process allfacilities inside the grid bin
+		for (const Facility& f : fg)
 		{
+			//Browse all points ui of the facility
+			int i = 0;
+			double f_radius = 0, f_abn = 0, f_dfp = 0, f_aspect = -1, f_dim = 0;
+			Eigen::MatrixXd M(f.U_idxs.size(), 3);
+
 			//Reset sign and shift of the index
-			const int u_idx2 = abs(u_idx) - 1;
+			const int p_idx2 = abs(f.p_idx) - 1;
 
-			//Convert clients to matrix
-			M(i, 0) = points[u_idx2].x;
-			M(i, 1) = points[u_idx2].y;
-			M(i, 2) = points[u_idx2].z;
-
-			//Compute pseudonorms
-			f_radius = std::max(nL2(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]), f_radius);
-			f_abn += nABN(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]);
-			f_dfp += nDFP(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]);
-
-			i++;
-		}
-
-		//PCA decomposition
-		if (f.U_idxs.size() > 0)
-		{
-			//PCA analysis
-			Eigen::MatrixXd centered = M.rowwise() - M.colwise().mean();
-			Eigen::MatrixXd cov = centered.adjoint() * centered;
-			Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eig(cov);
-
-			//Eigen vectors and eigen values
-			Eigen::MatrixXd eivect = eig.eigenvectors();
-			Eigen::MatrixXd eival = eig.eigenvalues();
-
-			//Compute cluster aspect
-			f_aspect = (eival(2,0) == 0 ? -1 : eival(1, 0) / eival(2, 0));
-
-			//Sum of eigen values
-			const double lambda_sum = eival(0, 0) + eival(1, 0) + eival(2, 0);
-
-			//Cluster dimension 0
-			if (lambda_sum == 0)
-				f_dim = 0;
-
-			//Cluster dimension: 0 - 3
-			else
+			//Process all clients
+			for (const int u_idx : f.U_idxs)
 			{
-				//Fractions of eigen values
-				const double lambda1f = eival(0, 0) / lambda_sum;
-				const double lambda2f = eival(1, 0) / lambda_sum;
-				const double lambda3f = eival(2, 0) / lambda_sum;
+				//Reset sign and shift of the index
+				const int u_idx2 = abs(u_idx) - 1;
 
-				//Set cluster dimensions
-				if (lambda3f < 0.01)		//Point
+				//Convert clients to matrix
+				M(i, 0) = points[u_idx2].x;
+				M(i, 1) = points[u_idx2].y;
+				M(i, 2) = points[u_idx2].z;
+
+				//Compute pseudonorms
+				f_radius = std::max(nL2(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]), f_radius);
+				f_abn += nABN(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]);
+				f_dfp += nDFP(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]);
+
+				i++;
+			}
+
+			//PCA decomposition
+			if (f.U_idxs.size() > 0)
+			{
+				//PCA analysis
+				Eigen::MatrixXd centered = M.rowwise() - M.colwise().mean();
+				Eigen::MatrixXd cov = centered.adjoint() * centered;
+				Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eig(cov);
+
+				//Eigen vectors and eigen values
+				Eigen::MatrixXd eivect = eig.eigenvectors();
+				Eigen::MatrixXd eival = eig.eigenvalues();
+
+				//Compute cluster aspect
+				f_aspect = (eival(2, 0) == 0 ? -1 : eival(1, 0) / eival(2, 0));
+
+				//Sum of eigen values
+				const double lambda_sum = eival(0, 0) + eival(1, 0) + eival(2, 0);
+
+				//Cluster dimension 0
+				if (lambda_sum == 0)
 					f_dim = 0;
 
-				else if (lambda2f < 0.01)	//Line	
-					f_dim = 1;
-
-				else if (lambda1f < 0.01)	//Circle
-					f_dim = 2;
-
-				else				//Sphere
-					f_dim = 3;
-			}
-		}
-
-		//Store values
-		NC.push_back(f.U_idxs.size());
-		RAD.push_back(f_radius);
-		ABN.push_back(f_abn / std::max(1, (int)f.U_idxs.size()));
-		DFP.push_back(f_dfp / std::max(1, (int)f.U_idxs.size()));
-		ASP.push_back(f_aspect);
-		DIM.push_back(f_dim);
-
-		//Compute slope
-		const double norm = sqrt(RP[p_idx2].a * RP[p_idx2].a + RP[p_idx2].b * RP[p_idx2].b + RP[p_idx2].c * RP[p_idx2].c);
-		const double slope = acos(RP[p_idx2].c / norm) * 180 / std::numbers::pi;
-		SLO.push_back(slope);
-
-		/*
-		Eigen::MatrixXd mat(points.size(), 3);
-
-		for (int i = 0; i < points.size(); i++)
-		{
-			mat(i, 0) = points[i].x;
-			mat(i, 1) = points[i].y;
-			mat(i, 2) = points[i].z;
-		}
-		*/
-		/*
-		double l = 1, w = 2, h = 3;
-		Eigen::MatrixXd mat(1, 3);
-		mat(0, 0) = 0;
-		/*
-		mat(0, 1) = 0;
-		mat(0, 2) = 0;
-
-		mat(1, 0) = l;
-		mat(1, 1) = 0;
-		mat(1, 2) = 0;
-
-		mat(2, 0) = 0;
-		mat(2, 1) = w;
-		mat(2, 2) = 0;
-
-		mat(3, 0) = l;
-		mat(3, 1) = w;
-		mat(3, 2) = 0;
-
-		mat(4, 0) = 0;
-		mat(4, 1) = 0;
-		mat(4, 2) = h;
-
-		mat(5, 0) = l;
-		mat(5, 1) = 0;
-		mat(5, 2) = h;
-
-		mat(6, 0) = 0;
-		mat(6, 1) = w;
-		mat(6, 2) = h;
-
-		mat(7, 0) = l;
-		mat(7, 1) = w;
-		mat(7, 2) = h;
-		
-
-		Eigen::MatrixXd centered = mat.rowwise() - mat.colwise().mean();
-		Eigen::MatrixXd cov = centered.adjoint() * centered;
-		Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eig(cov);
-		Eigen::MatrixXd eivect = eig.eigenvectors();
-		Eigen::MatrixXd eival = eig.eigenvalues();
-
-		std::cout << eivect;
-		std::cout << eival;
-		*/
-	}
-
-	//Compute overlap ratio
-	OVER.resize(F.size());
-	std::fill(OVER.begin(), OVER.end(), 0);
-
-	//Process facilities one by one
-	for (int i = 0; i < F.size(); i++)
-	{
-		//Reset sign and shift of the index
-		const int p_idx2 = abs(F[i].p_idx) - 1;
-
-		//Check all facilities
-		for (int j = 0; j < F.size(); j++)
-		{
-			if (i != j)
-			{
-				//Take all connected points
-				for (int k = 0; k < F[j].U_idxs.size(); k++)
+				//Cluster dimension: 0 - 3
+				else
 				{
-					const int u_idx2 = abs(F[j].U_idxs[k]) - 1;
+					//Fractions of eigen values
+					const double lambda1f = eival(0, 0) / lambda_sum;
+					const double lambda2f = eival(1, 0) / lambda_sum;
+					const double lambda3f = eival(2, 0) / lambda_sum;
 
-					//Increment overlap ratio
-					const double d = nL2(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]);
+					//Set cluster dimensions
+					//Point
+					if (lambda3f < 0.01)	
+						f_dim = 0;
 
-					if (d < RAD[i])
-						OVER[i] = OVER[i] + 1;
+					//Line	
+					else if (lambda2f < 0.01)	
+						f_dim = 1;
 
+					//Circle
+					else if (lambda1f < 0.01)
+						f_dim = 2;
+
+					//Sphere
+					else				
+						f_dim = 3;
 				}
 			}
+
+			//Compute overlap ratio
+			double f_over = 0;
+
+			//Get indices of all facilities in the adjacent cells of the grid
+			TVector <int> idxs_fac = gi.getAdjacentIndices(points[p_idx2]);
+
+			//Process all facilities in the adjacent cells of the grid
+			for (const int & idx_fac : idxs_fac)
+			{
+				//Process all facilities in the same bin
+				for (const Facility &f2 : FG[idx_fac])
+				{
+					//Different facilities
+					if (f.p_idx != f2.p_idx)
+					{
+						//Take all connected points
+						for (int k = 0; k < f2.U_idxs.size(); k++)
+						{
+							//Reset sign and shift of the index
+							const int u_idx2 = abs(f2.U_idxs[k]) - 1;
+
+							//Measure distance between the facility and a client
+							const double d = nL2(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]);
+
+							//Increment overlap ratio
+							if (d < f_radius)
+								f_over += 1;
+						}
+					}
+				}
+			}
+
+			//Compute slope
+			const double norm = sqrt(RP[p_idx2].a * RP[p_idx2].a + RP[p_idx2].b * RP[p_idx2].b + RP[p_idx2].c * RP[p_idx2].c);
+			const double f_slope = acos(RP[p_idx2].c / norm) * 180 / std::numbers::pi;
+			
+			//Store statistical values
+			NC.push_back(f.U_idxs.size());
+			RAD.push_back(f_radius);
+			ABN.push_back(f_abn / std::max(1, (int)f.U_idxs.size()));
+			DFP.push_back(f_dfp / std::max(1, (int)f.U_idxs.size()));
+			ASP.push_back(f_aspect);
+			DIM.push_back(f_dim);
+			SLO.push_back(f_slope);
+			OVER.push_back(f_over);
 		}
 	}
-	
 }

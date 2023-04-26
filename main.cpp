@@ -1,3 +1,24 @@
+// Description: Incremental heuristic facility location clustering of the point cloud
+
+// Copyright (c) 2021 - 2023
+// Tomas Bayer
+// Charles University in Prague, Faculty of Science
+// bayertom@natur.cuni.cz
+
+// This library is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library. If not, see <http://www.gnu.org/licenses/>.
+
+
 #define _CRT_SECURE_NO_WARNINGS
 #define _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
 
@@ -23,17 +44,16 @@ int main(int argc, char* argv[])
 	std::cout << "*** HYBRID CLUSTERIZATION OF THE POINT CLOUD *** \n";
 
 	//Testing data
-	//std::string file_name = "data\\eth_mid.txt";
 	//std::string file_name = "data\\test_pseudometrics.txt";
-	//std::string file_name = "data\\eth_mid.txt";
+	//std::string file_name = "data\\ETH\\eth_mid.txt";
 	//std::string file_name = "data\\Cone\\cone_10000.txt";
 	//std::string file_name = "data\\Ferrata\\via_ferrata_xyz_rgb_small.txt"; 
 	//std::string file_name = "data2\\test_pseudometrics.txt";
-
+	
 	//Parameters of the clusterization algorithm
 	bool non_uniform_cl = false, export_dxf = false, cluster_statistics = false;
 	int knn = 50, ns = 100000, l = 1;
-	double fc = 0.01, lambda = 0.25, mju = 0.95;
+	double fc = 0.01, lambda = 0.25, bin =  lambda, mju = 0.95;
 	pfnorm fnorm = &IHFL::nDFP;
 	std::string file_name, fnorm_text = "dfp", method_text = "ihfl";
 	/*
@@ -163,6 +183,12 @@ int main(int argc, char* argv[])
 				lambda = std::max(std::min(atof(value), 10.0), 0.01);
 			}
 
+			//Set size of the bin of the 3D grid (spatial indexing)
+			else if (!strcmp("bin", attribute))
+			{
+				bin = std::max(std::min(atof(value), 10.0 * lambda), 0.25 * lambda);
+			}
+
 			//Split cloud to subsets (point tiles)
 			else if (!strcmp("ns", attribute))
 			{
@@ -206,7 +232,7 @@ int main(int argc, char* argv[])
 	std::string file_list = file_name + ".list";
 
 	//Print parameters
-	std::cout << "\nParameters: norm = " << fnorm_text << ", method = " << method_text << ", f_cost = " << fc << ", lambda = " << lambda << ", l = " << l << ", mju = " << mju << ", max_clust = " << lambda << ", knn = " << knn << ", n_split = " << ns << ".\n\n";
+	std::cout << "\nParameters: norm = " << fnorm_text << ", method = " << method_text << ", f_cost = " << fc << ", lambda = " << lambda << ", bin = " << bin << ", l = " << l << ", mju = " << mju << ", max_clust = " << lambda << ", knn = " << knn << ", n_split = " << ns << ".\n\n";
 
 	//Load list of kd point tiles, if they exist
 	TVector<std::string> file_name_point_tiles;
@@ -229,7 +255,7 @@ int main(int argc, char* argv[])
 	}
 
 	//Create file name part unique for all files
-	std::string file_name_part = "_" + fnorm_text + "_l" + std::to_string(l) + "_unif" + std::to_string(!non_uniform_cl) + "_f" + std::format("{:.2f}", fc) + "_dc" + std::format("{:.2f}", lambda);
+	std::string file_name_part = "_" + fnorm_text + "_l" + std::to_string(l) + "_unif" + std::to_string(!non_uniform_cl) + "_f" + std::format("{:.2f}", fc) + "_dc" + std::format("{:.2f}", lambda) + "_bin" + std::format("{:.2f}", bin);
 
 	//Process point tiles one by one
 	unsigned int i = 0, n_subsets = file_name_point_tiles.size();
@@ -277,22 +303,31 @@ int main(int argc, char* argv[])
 			for (int i = 0; i < kd_point_tile.size(); i++)
 				kd_point_tile[i].id = ids + i;
 
-			//Apply facility location clusterization
-			TVector <Facility> F;
-			TVector <RegressionPlane> AN;
-
-			//Auxilliary variables
+			//Start measure time
 			const clock_t begin_time = clock();
 
-			//Incremental heuristic location (IFL)
-			IHFL clust(non_uniform_cl, knn, lambda, mju, l, fnorm);
-			clust.clusterizeIHFL(kd_point_tile, fc, F, AN);
+			//Initialize the grid index
+			GridIndexing gi(bin, bin, bin);
+			gi.initializeIndex(kd_point_tile);
+
+			//Auxilliary structures
+			TVector <RegressionPlane> RP;
+			TVector2D <Facility> FG(gi.nx* gi.ny* gi.nz);
+
+			//Incremental heuristic location (IHFL)
+			IHFL clust(non_uniform_cl, knn, lambda, bin, mju, l, fnorm);
+			clust.clusterizeIHFL(kd_point_tile, fc, gi, FG, RP);
+
+			//Convert indexed grid of facilities (2D vector) to 1D vector
+			TVector <Facility> F;
+			for (auto fg : FG)
+				F.insert(F.end(), std::make_move_iterator(fg.begin()), std::make_move_iterator(fg.end()));
 
 			//Statistics
 			const double time = (clock() - begin_time) / (CLOCKS_PER_SEC);
 			std::cout << "(time: " << time << "s, ";
 			std::cout << F.size() << " facilities). ";
-			std::cout << "OK \n\n";
+			std::cout << "OK \n";
 
 			//Export facilities to the list
 			TVector <int> clients_to_facilities_tile(kd_point_tile.size());
@@ -310,7 +345,7 @@ int main(int argc, char* argv[])
 
 			//Export clusters to DXF
 			if (export_dxf)
-				DXFExport::exportClustersToDXF(dxf_file_subset, F, kd_point_tile, AN);
+				DXFExport::exportClustersToDXF(dxf_file_subset, F, kd_point_tile, RP);
 
 			//Save facilities to txt file
 			if (cluster_statistics)
@@ -318,8 +353,10 @@ int main(int argc, char* argv[])
 				TVector <int> NC, OVER, DIM;
 				TVector <double> RAD, ABN, DFP, ASP, SLO;
 
+				std::cout << ">> Compute statistics: ";
+
 				//Compute parameters of clusters
-				clust.clusterStatistics(kd_point_tile, F, AN, NC, RAD, ABN, DFP, ASP, DIM, OVER, SLO);
+				clust.clusterStatistics(kd_point_tile, FG, gi, RP, NC, RAD, ABN, DFP, ASP, DIM, OVER, SLO);
 
 				//Add results to the list
 				NC_all.insert(NC_all.end(), NC.begin(), NC.end());
@@ -331,8 +368,10 @@ int main(int argc, char* argv[])
 				ASP_all.insert(ASP_all.end(), ASP.begin(), ASP.end());
 				SLO_all.insert(SLO_all.end(), SLO.begin(), SLO.end());
 
-				//Store facilities and their properties for the tile
+				//Store facilities and their statistics for the tile
 				IO::savePointCloudAndStatistics(facil_file_subset_stat, output_facilities_tile, NC, RAD, ABN, DFP, ASP, DIM, OVER, SLO);
+			
+				std::cout << "OK \n";
 			}
 			else
 				IO::savePointCloud(facil_file_subset, output_facilities_tile);
@@ -342,7 +381,7 @@ int main(int argc, char* argv[])
 
 
 			//Compute total cost
-			const double total_cost = clust.computeCost(F, kd_point_tile, AN);
+			const double total_cost = clust.computeCost(F, kd_point_tile, RP);
 			std::cout << "Total cost: " << total_cost << '\n';
 		}
 
@@ -357,12 +396,13 @@ int main(int argc, char* argv[])
 	}
 
 
-	//Save all facilities and therir properties into file
+	//Save all facilities and their statistics into file
 	std::string facil_file = file_name + file_name_part + "_facil_all.txt";
 	
 	if (cluster_statistics)
 		IO::savePointCloudAndStatistics(facil_file, output_facilities, NC_all, RAD_all, ABN_all, DFP_all, ASP_all, DIM_all, OVER_all, SLO_all);
 
+	//Save all facilities into file
 	else
 		IO::savePointCloud(facil_file, output_facilities);
 	

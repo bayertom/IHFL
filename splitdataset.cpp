@@ -1,3 +1,24 @@
+// Description: Split dataset using k-D tree
+
+// Copyright (c) 2021 - 2023
+// Tomas Bayer
+// Charles University in Prague, Faculty of Science
+// bayertom@natur.cuni.cz
+
+// This library is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this library. If not, see <http://www.gnu.org/licenses/>.
+
+
 #include <iostream>
 #include <fstream>
 #include <stack>
@@ -135,11 +156,9 @@ void SplitDataset::createKDPointTiles(const std::string& file_name, const int n_
 			//Add file name to the list
 			file_names.push_back(file_name_kdss);
 		}
-		
 	}
 
 	std::cout << "OK \n\n";
-	
 }
 
 

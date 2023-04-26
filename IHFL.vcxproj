@@ -110,7 +110,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Custom</Optimization>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -143,6 +143,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="dxfexport.cpp" />
+    <ClCompile Include="gridindexing.cpp" />
     <ClCompile Include="ihfl.cpp" />
     <ClCompile Include="io.cpp" />
     <ClCompile Include="kdpointtile.cpp" />
@@ -154,6 +155,7 @@
   <ItemGroup>
     <ClInclude Include="dxfexport.h" />
     <ClInclude Include="facility.h" />
+    <ClInclude Include="gridindexing.h" />
     <ClInclude Include="ihfl.h" />
     <ClInclude Include="io.h" />
     <ClInclude Include="isfacilitysefordeletion.h" />
