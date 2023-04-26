@@ -41,8 +41,8 @@
 
 int main(int argc, char* argv[])
 {
-	std::cout << "*** HYBRID CLUSTERIZATION OF THE POINT CLOUD *** \n";
-
+	std::cout << "*** FACILITY LOCATION CLUSTERING WITH PSEUDO-METRICS *** \n";
+	std::cout << "***   (ver. 2.0, 04/2023, bayertom@natur.cuni.cz)    *** \n";
 	//Testing data
 	//std::string file_name = "data\\test_pseudometrics.txt";
 	//std::string file_name = "data\\ETH\\eth_mid.txt";
@@ -280,7 +280,6 @@ int main(int argc, char* argv[])
 		std::string clients_to_facil_file_subset = f_name + file_name_part + "_facil2.txt";
 		std::string dxf_file_subset = f_name + file_name_part + ".dxf";
 		std::string result_file_subset = f_name + file_name_part + "_results.log";
-
 
 		//Output file with facilities does not exist
 		if (!std::filesystem::exists(facil_file_subset))
