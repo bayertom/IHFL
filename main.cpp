@@ -55,13 +55,18 @@ int main(int argc, char* argv[])
 	int knn = 50, ns = 100000, l = 1;
 	double fc = 0.01, lambda = 0.25, bin =  lambda, mju = 0.95;
 	pfnorm fnorm = &IHFL::nDFP;
-	std::string file_name, fnorm_text = "dfp", method_text = "ihfl";
+	std::string file_name, fnorm_text = "dfp";
 	/*
 	IHFL clust(non_uniform_cl, cluster_statistics, knn, lambda, mju, l, fnorm);
 	TVector <Point3D> U;
 	clust.generateCone(10, 5, 1000, U);
 	IO::savePointCloud("E:\\Tomas\\CPP\\IHFL\\cone2.txt", U);
 	*/
+
+	//Not enough command line parameters
+	if (argc < 2)
+		return 0;
+
 	//Process command line parameters
 	while (--argc > 0)
 	{
@@ -232,9 +237,9 @@ int main(int argc, char* argv[])
 	std::string file_list = file_name + ".list";
 
 	//Print parameters
-	std::cout << "\nParameters: norm = " << fnorm_text << ", method = " << method_text << ", f_cost = " << fc << ", lambda = " << lambda << ", bin = " << bin << ", l = " << l << ", mju = " << mju << ", max_clust = " << lambda << ", knn = " << knn << ", n_split = " << ns << ".\n\n";
+	std::cout << "\nParameters: unif = " << !non_uniform_cl << ", norm = " << fnorm_text << ", f_cost = " << fc << ", lambda = " << lambda << ", bin = " << bin << ", l = " << l << ", mju = " << mju << ", knn = " << knn << ", n_split = " << ns << ".\n\n";
 
-	//Load list of kd point tiles, if they exist
+	//Load list of kd point tiles, if they existf
 	TVector<std::string> file_name_point_tiles;
 	SplitDataset::loadKDPointTileFileNames(file_list, file_name_point_tiles);
 
@@ -255,7 +260,7 @@ int main(int argc, char* argv[])
 	}
 
 	//Create file name part unique for all files
-	std::string file_name_part = "_" + fnorm_text + "_l" + std::to_string(l) + "_unif" + std::to_string(!non_uniform_cl) + "_f" + std::format("{:.2f}", fc) + "_dc" + std::format("{:.2f}", lambda) + "_bin" + std::format("{:.2f}", bin);
+	std::string file_name_part = "_" + fnorm_text + "_l" + std::to_string(l) + "_unif" + std::to_string(!non_uniform_cl) + "_fc" + std::format("{:.2f}", fc) + "_lam" + std::format("{:.2f}", lambda) + "_bin" + std::format("{:.2f}", bin);
 
 	//Process point tiles one by one
 	unsigned int i = 0, n_subsets = file_name_point_tiles.size();

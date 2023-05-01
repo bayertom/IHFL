@@ -253,7 +253,7 @@ void IHFL::sideCylinderPoint(const double a, const double b, double& h, double& 
 
 void IHFL::baseCylinderPoint(const double a, const double b, double& h, double& r, double& t)
 {
-	//Points on the base of cone
+	//Points on the base of cylinder
 	std::random_device rd;
 	std::mt19937 gen(rd());
 	std::uniform_int_distribution<int> disi(0, 1);
@@ -301,7 +301,7 @@ void IHFL::generateCone(const double a, const double b, const int n, TVector <Po
 
 void IHFL::generateCylinder(const double a, const double b, const int n, TVector <Point3D>& U)
 {
-	//Generate cone
+	//Generate cylinder
 	double t = 0;
 
 	//Initialize random number generator
