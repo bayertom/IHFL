@@ -1,4 +1,4 @@
-// Description: Read / write data pro the point cloud
+// Description: Read / write the input / output point cloud
 
 // Copyright (c) 2021 - 2023
 // Tomas Bayer

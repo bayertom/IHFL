@@ -1,4 +1,4 @@
-// Sort 3d point according to Y coordinate
+// Sort 3d points according to Y coordinate
 
 // Copyright (c) 2021 - 2023
 // Tomas Bayer

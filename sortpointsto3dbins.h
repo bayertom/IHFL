@@ -1,4 +1,4 @@
-// Sort points according to 3D bins (Sloan)
+// Sort 3D points according to 3D bins (Sloan)
 
 // Copyright (c) 2021 - 2023
 // Tomas Bayer

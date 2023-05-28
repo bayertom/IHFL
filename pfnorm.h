@@ -24,7 +24,7 @@
 #include "point3d.h"
 #include "regressionplane.h"
 
-//Forward ddeclaration
+//Forward declaration
 class IHFL;
 
 //Pointer to the (pseudo) norm function

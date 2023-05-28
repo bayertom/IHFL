@@ -1,4 +1,4 @@
-// Description: Mark faciity for the deletiotion (S3 strategy)
+// Description: Mark facility for the deletition (S3 strategy)
 
 // Copyright (c) 2021 - 2023
 // Tomas Bayer

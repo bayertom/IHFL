@@ -1,4 +1,4 @@
-// Description: Point 3D, ALS point cloud
+// Description: 3D point with r, g, b components and initial facility cost
 
 // Copyright (c) 2021 - 2023
 // Tomas Bayer

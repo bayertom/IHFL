@@ -1,4 +1,4 @@
-// Sort 3D point according to Z coordinate
+// Sort 3D points according to Z coordinate
 
 // Copyright (c) 2021 - 2023
 // Tomas Bayer

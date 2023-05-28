@@ -1,0 +1,12 @@
+#ifndef Index3D_H
+#define Index3D_H
+
+//3D spatial index according to grid
+struct Index3D
+{
+    int i1;
+    int i2;
+    int i3;
+};
+
+#endif

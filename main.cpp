@@ -1,4 +1,5 @@
 // Description: Incremental heuristic facility location clustering of the point cloud
+// Main cpp file: read data, ¨perform clusterization, write data
 
 // Copyright (c) 2021 - 2023
 // Tomas Bayer
@@ -36,8 +37,6 @@
 #include "sortpoints3dbyz.h"
 #include "sortpointsto3dbins.h"
 #include "dxfexport.h"
-//#include "tvector.h"
-
 
 int main(int argc, char* argv[])
 {
@@ -56,7 +55,8 @@ int main(int argc, char* argv[])
 	double fc = 0.01, lambda = 0.25, bin =  lambda, mju = 0.95;
 	pfnorm fnorm = &IHFL::nDFP;
 	std::string file_name, fnorm_text = "dfp";
-	/*
+	
+	/* Testing data
 	IHFL clust(non_uniform_cl, cluster_statistics, knn, lambda, mju, l, fnorm);
 	TVector <Point3D> U;
 	clust.generateCone(10, 5, 1000, U);

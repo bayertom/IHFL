@@ -1,4 +1,4 @@
-// Description: Facility location clustering
+// Description: Facility definition, used for clustering
 
 // Copyright (c) 2021 - 2023
 // Tomas Bayer

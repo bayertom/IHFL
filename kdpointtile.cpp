@@ -1,4 +1,4 @@
-// Description: Point tile, k-D tree
+// Description: Point tile of the k-D tree
 
 // Copyright (c) 2021 - 2023
 // Tomas Bayer
