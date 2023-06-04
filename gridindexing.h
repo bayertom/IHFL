@@ -1,4 +1,4 @@
-// Description: Spatial Indexing using 3D grid
+// Description: Spatial Indexing using 3D grid  (formed by bins)
 
 // Copyright (c) 2022 - 2023
 // Tomas Bayer
@@ -26,14 +26,14 @@
 #include "point3d.h"
 #include "tvector.h"
 
-//Spatial indexing according to 3D grid
+//Spatial indexing according to 3D grid (formed by bins)
 class GridIndexing
 {
 	public:
 
 		double bx;			//Bin size in X direction
-		double by;			//Bin size in X direction
-		double bz;			//Bin size in X direction
+		double by;			//Bin size in Y direction
+		double bz;			//Bin size in Z direction
 		int nx;				//Amount of bins in X direction
 		int ny;				//Amount of bins in Y direction
 		int nz;				//Amount of bins in Z direction
