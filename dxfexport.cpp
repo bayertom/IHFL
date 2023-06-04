@@ -71,6 +71,7 @@ void DXFExport::exportClustersToDXF(const std::string& file_name, const TVector 
 		//Process all facilities
 		for (Facility f : F)
 		{
+			//Get point id
 			const int p_idx2 = abs(f.p_idx) - 1;
 
 			//Create facility
@@ -83,6 +84,7 @@ void DXFExport::exportClustersToDXF(const std::string& file_name, const TVector 
 			//Create connected points and connecting lines
 			for (auto u_idx : f.U_idxs)
 			{
+				//Get client ID
 				const int u_idx2 = abs(u_idx) - 1;
 
 				//Create connected point
@@ -90,6 +92,9 @@ void DXFExport::exportClustersToDXF(const std::string& file_name, const TVector 
 
 				//Create connecting line
 				createLine(file, level_facilities_lines, points[p_idx2].x, points[p_idx2].y, points[p_idx2].z, points[u_idx2].x, points[u_idx2].y, points[u_idx2].z, color_facilities_lines);
+
+				//if (points[p_idx2].x == points[u_idx2].x && points[p_idx2].y == points[u_idx2].y)
+				//	std::cout << "identical";
 
 				//Create point label
 				std::string point_label = std::to_string(u_idx2);

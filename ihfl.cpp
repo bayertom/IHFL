@@ -765,17 +765,19 @@ void IHFL::clusterStatistics(const TVector <Point3D>& points, const TVector2D <F
 					const double lambda2f = eival(1, 0) / lambda_sum;
 					const double lambda3f = eival(2, 0) / lambda_sum;
 
+					const double lambda_sum = lambda1f + lambda2f + lambda3f;
+
 					//Set cluster dimensions
 					//Point
 					if (lambda3f < 0.01)	
 						f_dim = 0;
 
 					//Line	
-					else if (lambda2f < 0.01)	
+					else if (lambda2f / lambda_sum < 0.01)	
 						f_dim = 1;
 
 					//Circle
-					else if (lambda1f < 0.01)
+					else if (lambda1f / lambda_sum < 0.01)
 						f_dim = 2;
 
 					//Sphere

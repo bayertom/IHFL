@@ -1,5 +1,5 @@
 // Description: Incremental heuristic facility location clustering of the point cloud
-// Main cpp file: read data, ¨perform clusterization, write data
+// Main cpp file: read data, perform clusterization, write data
 
 // Copyright (c) 2021 - 2023
 // Tomas Bayer
@@ -48,7 +48,8 @@ int main(int argc, char* argv[])
 	//std::string file_name = "data\\Cone\\cone_10000.txt";
 	//std::string file_name = "data\\Ferrata\\via_ferrata_xyz_rgb_small.txt"; 
 	//std::string file_name = "data2\\test_pseudometrics.txt";
-	
+	//std::string file_name = "data\\Sima\\Canopy\\canopy.txt_5_2_2.txt";
+
 	//Parameters of the clusterization algorithm
 	bool non_uniform_cl = false, export_dxf = false, cluster_statistics = false;
 	int knn = 50, ns = 100000, l = 1;
@@ -239,7 +240,7 @@ int main(int argc, char* argv[])
 	//Print parameters
 	std::cout << "\nParameters: unif = " << !non_uniform_cl << ", norm = " << fnorm_text << ", f_cost = " << fc << ", lambda = " << lambda << ", bin = " << bin << ", l = " << l << ", mju = " << mju << ", knn = " << knn << ", n_split = " << ns << ".\n\n";
 
-	//Load list of kd point tiles, if they existf
+	//Load list of kd point tiles, if they exist
 	TVector<std::string> file_name_point_tiles;
 	SplitDataset::loadKDPointTileFileNames(file_list, file_name_point_tiles);
 
