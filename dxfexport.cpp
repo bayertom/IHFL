@@ -31,9 +31,9 @@
 void DXFExport::exportClustersToDXF(const std::string& file_name, const TVector <Facility>& F, const TVector <Point3D>& points, const TVector <RegressionPlane>& RP)
 {
 	//Export clusters represented by facilities to DXF file
-	const unsigned int color_points = 5, color_facilities = 3, color_facilities_lines = 3, color_normals = 1, color_text = 3;
+	const unsigned int color_points = 5, color_facilities = 3, color_clients = 3, color_normals = 1, color_text = 3;
 	const double font_height = 0.001;
-	const std::string level_points = "Source_points", level_facilities = "Facilities", level_facilities_lines = "Facilities_lines", level_normals = "Normals", level_text = "Text";
+	const std::string level_points = "Source_points", level_facilities = "Facilities", level_facilities_lines = "Facilities_lines", level_clients = "Clients", level_normals = "Normals", level_text = "Text";
 
 	std::ofstream file;
 
@@ -53,8 +53,11 @@ void DXFExport::exportClustersToDXF(const std::string& file_name, const TVector 
 		//Create layer for facilities
 		createLayerSection(file, level_facilities, color_facilities);
 
-		//Create layer for lines conecting facilities
-		createLayerSection(file, level_facilities_lines, color_facilities_lines);
+		//Create layer for lines conecting facilities and clients
+		createLayerSection(file, level_facilities_lines, color_clients);
+
+		//Create layer for clients
+		createLayerSection(file, level_clients, color_clients);
 
 		//Create layer for normals
 		createLayerSection(file, level_normals, color_normals);
@@ -68,8 +71,22 @@ void DXFExport::exportClustersToDXF(const std::string& file_name, const TVector 
 		//Create entity section
 		createEntitySection(file);
 
+		//Create all source points, their labels and normals
+		for (int i = 0; i < points.size(); i++)
+		{
+			//Create a point
+			createPoint(file, level_points, points[i].x, points[i].y, points[i].z, color_points);
+
+			//Create point label
+			std::string point_label = std::to_string(i);
+			createText(file, level_text, point_label, points[i].x + 0.5 * font_height, points[i].y - 0.5 * font_height, points[i].z, 0.0, font_height, color_text);
+
+			//Create normal at a point
+			createLine(file, level_normals, points[i].x, points[i].y, points[i].z, points[i].x + 0.1 * RP[i].a, points[i].y + 0.1 * RP[i].b, points[i].z + 0.1 * RP[i].c, color_normals);
+		}
+
 		//Process all facilities
-		for (Facility f : F)
+		for (const Facility &f : F)
 		{
 			//Get point id
 			const int p_idx2 = abs(f.p_idx) - 1;
@@ -77,35 +94,21 @@ void DXFExport::exportClustersToDXF(const std::string& file_name, const TVector 
 			//Create facility
 			createPoint(file, level_facilities, points[p_idx2].x, points[p_idx2].y, points[p_idx2].z, color_facilities);
 
-			//Create facility label
-			std::string facility_label = std::to_string(p_idx2);
-			createText(file, level_text, facility_label, points[p_idx2].x + 0.5 * font_height, points[p_idx2].y - 0.5 * font_height, points[p_idx2].z, 0.0, font_height, color_text);
-
-			//Create connected points and connecting lines
-			for (auto u_idx : f.U_idxs)
+			//Create connected clients and lines connecting facilities with clients
+			for (int u_idx : f.U_idxs)
 			{
 				//Get client ID
 				const int u_idx2 = abs(u_idx) - 1;
 
-				//Create connected point
-				createPoint(file, level_points, points[u_idx2].x, points[u_idx2].y, points[u_idx2].z, color_points);
+				//Create connected client
+				createPoint(file, level_clients, points[u_idx2].x, points[u_idx2].y, points[u_idx2].z, color_points);
 
-				//Create connecting line
-				createLine(file, level_facilities_lines, points[p_idx2].x, points[p_idx2].y, points[p_idx2].z, points[u_idx2].x, points[u_idx2].y, points[u_idx2].z, color_facilities_lines);
+				//Create line connecting facility and the client
+				createLine(file, level_facilities_lines, points[p_idx2].x, points[p_idx2].y, points[p_idx2].z, points[u_idx2].x, points[u_idx2].y, points[u_idx2].z, color_clients);
 
 				//if (points[p_idx2].x == points[u_idx2].x && points[p_idx2].y == points[u_idx2].y)
 				//	std::cout << "identical";
-
-				//Create point label
-				std::string point_label = std::to_string(u_idx2);
-				createText(file, level_text, point_label, points[u_idx2].x + 0.5 * font_height, points[u_idx2].y - 0.5 * font_height, points[u_idx2].z, 0.0, font_height, color_text);
-
-				//Create normal at a point
-				createLine(file, level_normals, points[u_idx2].x, points[u_idx2].y, points[u_idx2].z, points[u_idx2].x + 0.1 * RP[u_idx2].a, points[u_idx2].y + 0.1 * RP[u_idx2].b, points[u_idx2].z + 0.1 * RP[u_idx2].c, color_normals);
 			}
-
-			//Create normal at facility
-			createLine(file, level_normals, points[p_idx2].x, points[p_idx2].y, points[p_idx2].z, points[p_idx2].x + 0.1 * RP[p_idx2].a, points[p_idx2].y + 0.1 * RP[p_idx2].b, points[p_idx2].z + 0.1 * RP[p_idx2].c, color_normals);
 		}
 
 		//End header section

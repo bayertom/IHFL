@@ -48,7 +48,8 @@ int main(int argc, char* argv[])
 	//std::string file_name = "data\\Cone\\cone_10000.txt";
 	//std::string file_name = "data\\Ferrata\\via_ferrata_xyz_rgb_small.txt"; 
 	//std::string file_name = "data2\\test_pseudometrics.txt";
-	//std::string file_name = "data\\Sima\\Canopy\\canopy.txt_5_2_2.txt";
+	//std::string file_name = "data\\Sima\\Canopy\\canopy_small.txt";
+	//std::string file_name = "data\\MP\\boulder_small.txt";
 
 	//Parameters of the clusterization algorithm
 	bool non_uniform_cl = false, export_dxf = false, cluster_statistics = false;
@@ -65,8 +66,8 @@ int main(int argc, char* argv[])
 	*/
 
 	//Not enough command line parameters
-	if (argc < 2)
-		return 0;
+	//if (argc < 2)
+	//	return 0;
 
 	//Process command line parameters
 	while (--argc > 0)

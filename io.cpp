@@ -57,7 +57,7 @@ void IO::loadPointCloud(const std::string& file_name, TVector <Point3D>& U, cons
 			if (row.size() == 3)
 				U.push_back(Point3D(index, std::stod(row[0]), std::stod(row[1]), std::stod(row[2]), fc));
 
-			//Add point P = [x, y, z, c] to the list
+			//Add point P = [x, y, z, fc] to the list
 			else if (row.size() == 4)
 				U.push_back(Point3D(index, std::stod(row[0]), std::stod(row[1]), std::stod(row[2]), std::stod(row[3])));
 
@@ -69,6 +69,10 @@ void IO::loadPointCloud(const std::string& file_name, TVector <Point3D>& U, cons
 			else if (row.size() == 7)
 				U.push_back(Point3D(index, std::stod(row[0]), std::stod(row[1]), std::stod(row[2]), std::stod(row[3]), std::stoi(row[4]), std::stoi(row[5]), std::stoi(row[6])));
 
+			//Unknown structure
+			//Add point P = [x, y, z, r, g, b] to the list
+			else if (row.size() > 7)
+				U.push_back(Point3D(index, std::stod(row[0]), std::stod(row[1]), std::stod(row[2]), fc, std::stoi(row[3]), std::stoi(row[4]), std::stoi(row[5])));
 
 			index++;
 		}
