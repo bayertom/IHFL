@@ -262,7 +262,7 @@ int main(int argc, char* argv[])
 	}
 
 	//Create file name part unique for all files
-	std::string file_name_part = "_" + fnorm_text + "_l" + std::to_string(l) + "_unif" + std::to_string(!non_uniform_cl) + "_fc" + std::format("{:.2f}", fc) + "_lam" + std::format("{:.2f}", lambda) + "_bin" + std::format("{:.2f}", bin);
+	std::string file_name_part = "_" + fnorm_text + "_l" + std::to_string(l) + "_unif" + std::to_string(!non_uniform_cl) + "_fc" + std::format("{:.2f}", fc) + "_lam" + std::format("{:.2f}", lambda) + "_bin" + std::format("{:.2f}", bin) + "_mju" + std::format("{:.2f}", mju);
 
 	//Process point tiles one by one
 	unsigned int i = 0, n_subsets = file_name_point_tiles.size();
