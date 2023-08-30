@@ -66,6 +66,7 @@ class IHFL
 		     TVector <int>& OVER, TVector <double>& SLO);
 
 		 double nL2(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double nL1(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
 		 double nDIS(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
 		 double nABN(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
 		 double nABLP(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
@@ -73,7 +74,8 @@ class IHFL
 		 double computeCost(const TVector <Facility>& F, const TVector <Point3D>& points, const TVector <RegressionPlane>& RP);
 
 private:
-		 double dist(const double x1, const double y1, const double z1, const double x2, const double y2, const double z2);
+		 double distL2(const double x1, const double y1, const double z1, const double x2, const double y2, const double z2);
+		 double distL1(const double x1, const double y1, const double z1, const double x2, const double y2, const double z2);
 		 double pointPlaneDist(const double qx, const double qy, const double qz, const double a, const double b, const double c, const double d);
 		 double abn(const RegressionPlane & pa, const RegressionPlane & pb);
 		 double ablp(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);

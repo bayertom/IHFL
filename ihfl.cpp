@@ -36,14 +36,25 @@
 #include <Eigen/Sparse>                              
 #include <Eigen/Core>
 
-double IHFL::dist(const double x1, const double y1, const double z1, const double x2, const double y2, const double z2)
+double IHFL::distL2(const double x1, const double y1, const double z1, const double x2, const double y2, const double z2)
 {
 	//Compute Euclidean distance
 	const double dx = x2 - x1;
 	const double dy = y2 - y1;
 	const double dz = z2 - z1;
 
-	return sqrt(dx * dx + dy * dy + dz * dz);
+	return fabs(dx) + fabs(dy) + fabs(dz);
+}
+
+
+double IHFL::distL1(const double x1, const double y1, const double z1, const double x2, const double y2, const double z2)
+{
+	//Compute Euclidean distance
+	const double dx = x2 - x1;
+	const double dy = y2 - y1;
+	const double dz = z2 - z1;
+
+	return fabs(dx) + fabs(dy) + fabs(dz);
 }
 
 
@@ -103,7 +114,14 @@ double IHFL::dfp(const Point3D& a, const Point3D& b, const RegressionPlane& pa, 
 double IHFL::nL2(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
 {
 	//L2 norm
-	return dist(a.x, a.y, a.z, b.x, b.y, b.z);
+	return distL2(a.x, a.y, a.z, b.x, b.y, b.z);
+}
+
+
+double IHFL::nL1(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+{
+	//L2 norm
+	return distL1(a.x, a.y, a.z, b.x, b.y, b.z);
 }
 
 
@@ -384,7 +402,7 @@ void IHFL::recomputeFacilityCosts(const double fc, double rat, const TVector <Re
 		}
 		
 		//DFP + L2
-		else if (fnorm == &IHFL::nDFP || fnorm == &IHFL::nL2)
+		else if (fnorm == &IHFL::nDFP || fnorm == &IHFL::nL2 || fnorm == &IHFL::nL1)
 		{
 			U[i].fc = std::max(std::min(fc * fc / (RP[i].sigma + eps), rat * fc), fc / rat);
 		}
@@ -526,7 +544,7 @@ void IHFL::updateClusters(const int i, const TVector <Point3D>& points, const TV
 			const int p_idx2 = abs(fac.p_idx) - 1;
 
 			//Norm and pseudonorm
-			const double dist_pf = dist(points[i].x, points[i].y, points[i].z, points[p_idx2].x, points[p_idx2].y, points[p_idx2].z);       //Distance between point p and facility
+			const double dist_pf = distL2(points[i].x, points[i].y, points[i].z, points[p_idx2].x, points[p_idx2].y, points[p_idx2].z);       //Distance between point p and facility
 			const double dpf = (this->*fnorm)(points[i], points[p_idx2], RP[i], RP[p_idx2]);				//Pseudonorm between point p and facility
 
 			//Cummulated values
@@ -705,7 +723,7 @@ void IHFL::clusterStatistics(const TVector <Point3D>& points, const TVector2D <F
 	//Compute parameters of the cluster
 	for (const auto &fg : FG)
 	{ 
-		//Process allfacilities inside the grid bin
+		//Process all facilities inside the grid bin
 		for (const Facility& f : fg)
 		{
 			//Browse all points ui of the facility

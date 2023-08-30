@@ -167,11 +167,18 @@ int main(int argc, char* argv[])
 					fnorm_text = "dfp";
 				}
 
-				//L2
+				//L2 norm
 				else if (!strcmp("l2", value))
 				{
 					fnorm = &IHFL::nL2;
 					fnorm_text = "l2";
+				}
+
+				//L1 norm
+				else if (!strcmp("l1", value))
+				{
+					fnorm = &IHFL::nL1;
+					fnorm_text = "l1";
 				}
 
 				else
@@ -187,13 +194,15 @@ int main(int argc, char* argv[])
 			//Set maximum radius ball
 			else if (!strcmp("lambda", attribute))
 			{
-				lambda = std::max(std::min(atof(value), 10.0), 0.01);
+				lambda = std::max(std::min(atof(value), 1000.0), 0.01);
+				std::cout << "lam:" << lambda;
 			}
 
 			//Set size of the bin of the 3D grid (spatial indexing)
 			else if (!strcmp("bin", attribute))
 			{
-				bin = std::max(std::min(atof(value), 10.0 * lambda), 0.25 * lambda);
+				bin = std::max(std::min(atof(value), 1000.0), 0.01);
+				//bin = std::max(std::min(atof(value), 10.0 * lambda), 0.25 * lambda);
 			}
 
 			//Split cloud to subsets (point tiles)
@@ -349,16 +358,12 @@ int main(int argc, char* argv[])
 				}
 			}
 
-			//Export clusters to DXF
-			if (export_dxf)
-				DXFExport::exportClustersToDXF(dxf_file_subset, F, kd_point_tile, RP);
-
 			//Save facilities to txt file
 			if (cluster_statistics)
 			{
 				TVector <int> NC, OVER, DIM;
 				TVector <double> RAD, ABN, DFP, ASP, SLO;
-
+				
 				std::cout << ">> Compute statistics: ";
 
 				//Compute parameters of clusters
@@ -382,9 +387,14 @@ int main(int argc, char* argv[])
 			else
 				IO::savePointCloud(facil_file_subset, output_facilities_tile);
 
+
+			//Export clusters to DXF
+			if (export_dxf)
+				DXFExport::exportClustersToDXF(dxf_file_subset, F, kd_point_tile, RP);
+
+
 			//Save facilities with assigned point
 			IO::saveClientsToFacilites(clients_to_facil_file_subset, clients_to_facilities_tile);
-
 
 			//Compute total cost
 			const double total_cost = clust.computeCost(F, kd_point_tile, RP);
