@@ -50,9 +50,9 @@ void GridIndexing::initializeIndex(const TVector <Point3D>& points)
 	//Compute amount of bins
 	if (nx == -1)
 	{
-		nx = ceil(dx / bx);
-		ny = ceil(dy / by);
-		nz = ceil(dz / bz);
+		nx = ceil(std::max(dx / bx, 1.0));
+		ny = ceil(std::max(dy / by, 1.0));
+		nz = ceil(std::max(dz / bz, 1.0));
 	}
 
 	//Compute bin size
@@ -71,9 +71,9 @@ std::tuple<int, int, int> GridIndexing::get3DIndex(const Point3D& q) const
 	const double k = 0.99;
 
 	//Reduce coordinates
-	const double xr = (q.x - xmin) / dx;
-	const double yr = (q.y - ymin) / dy;
-	const double zr = (q.z - zmin) / dz;
+	const double xr = (dx == 0 ? 0 : (q.x - xmin) / dx);
+	const double yr = (dy == 0 ? 0 : (q.y - ymin) / dy);
+	const double zr = (dz == 0 ? 0 : (q.z - zmin) / dz);
 
 	//Point outside the min-max box
 	if ((xr < 0 || xr > 1) || (yr < 0 || yr > 1) || (zr < 0 || zr > 1))

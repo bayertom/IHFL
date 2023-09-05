@@ -58,6 +58,17 @@ double IHFL::distL1(const double x1, const double y1, const double z1, const dou
 }
 
 
+double IHFL::distEll(const double x1, const double y1, const double z1, const double x2, const double y2, const double z2)
+{
+	//Compute elliptic distance distance
+	const double dx = x_scale * (x2 - x1);
+	const double dy = y_scale * (y2 - y1);
+	const double dz = z_scale * (z2 - z1);
+
+	return sqrt(dx * dx + dy * dy + dz * dz);
+}
+
+
 double IHFL::pointPlaneDist(const double qx, const double qy, const double qz, const double a, const double b, const double c, const double d)
 {
 	//Distance of the point q = [qz, qy, qz] from the plane given by (a, b, c, d)
@@ -122,6 +133,14 @@ double IHFL::nL1(const Point3D& a, const Point3D& b, const RegressionPlane& pa, 
 {
 	//L2 norm
 	return distL1(a.x, a.y, a.z, b.x, b.y, b.z);
+}
+
+
+
+double IHFL::nEll(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+{
+	//Elliptic distance
+	return distEll(a.x, a.y, a.z,  b.x, b.y, a.z);
 }
 
 
@@ -401,8 +420,8 @@ void IHFL::recomputeFacilityCosts(const double fc, double rat, const TVector <Re
 			U[i].fc = std::max(std::min(fc * fc / (RP[i].abn + eps), rat * fc), fc / rat);
 		}
 		
-		//DFP + L2
-		else if (fnorm == &IHFL::nDFP || fnorm == &IHFL::nL2 || fnorm == &IHFL::nL1)
+		//DFP + L1 + L2 + ...
+		else if (fnorm == &IHFL::nDFP || fnorm == &IHFL::nL2 || fnorm == &IHFL::nL1 || fnorm == &IHFL::nEll)
 		{
 			U[i].fc = std::max(std::min(fc * fc / (RP[i].sigma + eps), rat * fc), fc / rat);
 		}

@@ -47,13 +47,18 @@ class IHFL
 		double  lambda,			//Radius of the ball
 			bin,			//Size of the bin of the grid (performance of the spatial indexing)
 			mju,			//Isotropic factor
-			l;			//Penalization outside the ball, power of distance differences
+			l,			//Penalization outside the ball, power of distance differences
+			x_scale,		//Scale factor in X direction
+			y_scale,		//Scale factor in Y direction
+			z_scale;		//Scale factor in Z direction
+
 		const pfnorm &fnorm;		//Reference to the (pseudo) norm
 
 
 	public:
-		 IHFL(const bool non_uniform_cl_, const int k_, const double lambda_, const double bin_, const double mju_, const double l_, const pfnorm &fnorm_) :
-			non_uniform_cl(non_uniform_cl_), k(k_), lambda(lambda_), bin(bin_), mju(mju_), l(l_), fnorm(fnorm_) {}
+		 IHFL(const bool non_uniform_cl_, const int k_, const double lambda_, const double bin_, const double mju_, const double l_, const double x_scale_, 
+			const double y_scale_, const double z_scale_, const pfnorm &fnorm_) : non_uniform_cl(non_uniform_cl_), k(k_), lambda(lambda_), bin(bin_), 
+			 mju(mju_), l(l_), x_scale(x_scale_), y_scale(y_scale_), z_scale(z_scale_), fnorm(fnorm_) {}
 		
 		 void generateClusters(const double w, const double h, const double rad, const int nc, const int n, TVector <Point3D>& U);
 		 void generateCone(const double a, const double b, const int n, TVector <Point3D>& U);
@@ -67,6 +72,7 @@ class IHFL
 
 		 double nL2(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
 		 double nL1(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double nEll(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
 		 double nDIS(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
 		 double nABN(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
 		 double nABLP(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
@@ -76,6 +82,7 @@ class IHFL
 private:
 		 double distL2(const double x1, const double y1, const double z1, const double x2, const double y2, const double z2);
 		 double distL1(const double x1, const double y1, const double z1, const double x2, const double y2, const double z2);
+		 double distEll(const double x1, const double y1, const double z1, const double x2, const double y2, const double z2);
 		 double pointPlaneDist(const double qx, const double qy, const double qz, const double a, const double b, const double c, const double d);
 		 double abn(const RegressionPlane & pa, const RegressionPlane & pb);
 		 double ablp(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);

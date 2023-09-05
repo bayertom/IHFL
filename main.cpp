@@ -41,7 +41,7 @@
 int main(int argc, char* argv[])
 {
 	std::cout << "*** FACILITY LOCATION CLUSTERING WITH PSEUDO-METRICS *** \n";
-	std::cout << "***   (ver. 2.0, 04/2023, bayertom@natur.cuni.cz)    *** \n";
+	std::cout << "***   (ver. 2.1, 09/2023, bayertom@natur.cuni.cz)    *** \n";
 	//Testing data
 	//std::string file_name = "data\\test_pseudometrics.txt";
 	//std::string file_name = "data\\ETH\\eth_mid.txt";
@@ -50,13 +50,16 @@ int main(int argc, char* argv[])
 	//std::string file_name = "data2\\test_pseudometrics.txt";
 	//std::string file_name = "data\\Sima\\Canopy\\canopy_small.txt";
 	//std::string file_name = "data\\MP\\boulder_small.txt";
+	//std::string file_name = "data\\Plane\\points1000_1.txt";
 
 	//Parameters of the clusterization algorithm
 	bool non_uniform_cl = false, export_dxf = false, cluster_statistics = false;
 	int knn = 50, ns = 100000, l = 1;
-	double fc = 0.01, lambda = 0.25, bin =  lambda, mju = 0.95;
+	double fc = 0.01, lambda = 0.25, bin = lambda, mju = 0.95;
+	double x_scale = 1.0, y_scale = 1.0, z_scale = 1.0;
 	pfnorm fnorm = &IHFL::nDFP;
 	std::string file_name, fnorm_text = "dfp";
+
 	
 	/* Testing data
 	IHFL clust(non_uniform_cl, cluster_statistics, knn, lambda, mju, l, fnorm);
@@ -181,8 +184,15 @@ int main(int argc, char* argv[])
 					fnorm_text = "l1";
 				}
 
-				else
-					throw std::exception("Exception: Invalid clusterization norm type in command line!");
+				//L1 norm
+				else if (!strcmp("ell", value))
+				{
+					fnorm = &IHFL::nEll;
+					fnorm_text = "ell";
+				}
+
+				//else
+				//	throw std::exception("Exception: Invalid clusterization norm type in command line!");
 			}
 
 			//Set the facility cost
@@ -227,6 +237,24 @@ int main(int argc, char* argv[])
 			else if (!strcmp("l", attribute))
 			{
 				l = std::max(std::min(atof(value), 3.0), 0.5);
+			}
+
+			//Set scale factor in the X direction
+			else if (!strcmp("a", attribute))
+			{
+				x_scale = std::max(std::min(atof(value), 100.0), 0.01);
+			}
+
+			//Set scale factor in the Y direction
+			else if (!strcmp("b", attribute))
+			{
+				y_scale = std::max(std::min(atof(value), 100.0), 0.01);
+			}
+
+			//Set scale factor in the Z direction
+			else if (!strcmp("c", attribute))
+			{
+				z_scale = std::max(std::min(atof(value), 100.0), 0.01);
 			}
 
 			//Bad argument
@@ -330,7 +358,7 @@ int main(int argc, char* argv[])
 			TVector2D <Facility> FG(gi.nx* gi.ny* gi.nz);
 
 			//Incremental heuristic location (IHFL)
-			IHFL clust(non_uniform_cl, knn, lambda, bin, mju, l, fnorm);
+			IHFL clust(non_uniform_cl, knn, lambda, bin, mju, l, x_scale, y_scale, z_scale, fnorm);
 			clust.clusterizeIHFL(kd_point_tile, fc, gi, FG, RP);
 
 			//Convert indexed grid of facilities (2D vector) to 1D vector
