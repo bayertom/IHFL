@@ -10,6 +10,7 @@
 #ifndef EIGEN_SPARSEASSIGN_H
 #define EIGEN_SPARSEASSIGN_H
 
+// IWYU pragma: private
 #include "./InternalHeaderCheck.h"
 
 namespace Eigen { 
@@ -78,14 +79,20 @@ void assign_sparse_to_sparse(DstXprType &dst, const SrcXprType &src)
 
   SrcEvaluatorType srcEvaluator(src);
 
-  const bool transpose = (DstEvaluatorType::Flags & RowMajorBit) != (SrcEvaluatorType::Flags & RowMajorBit);
+  constexpr bool transpose = (DstEvaluatorType::Flags & RowMajorBit) != (SrcEvaluatorType::Flags & RowMajorBit);
   const Index outerEvaluationSize = (SrcEvaluatorType::Flags&RowMajorBit) ? src.rows() : src.cols();
+
+  Index reserveSize = 0;
+  for (Index j = 0; j < outerEvaluationSize; ++j)
+    for (typename SrcEvaluatorType::InnerIterator it(srcEvaluator, j); it; ++it)
+      reserveSize++;
+
   if ((!transpose) && src.isRValue())
   {
     // eval without temporary
     dst.resize(src.rows(), src.cols());
     dst.setZero();
-    dst.reserve((std::min)(src.rows()*src.cols(), (std::max)(src.rows(),src.cols())*2));
+    dst.reserve(reserveSize);
     for (Index j=0; j<outerEvaluationSize; ++j)
     {
       dst.startVec(j);
@@ -109,7 +116,7 @@ void assign_sparse_to_sparse(DstXprType &dst, const SrcXprType &src)
     
     DstXprType temp(src.rows(), src.cols());
 
-    temp.reserve((std::min)(src.rows()*src.cols(), (std::max)(src.rows(),src.cols())*2));
+    temp.reserve(reserveSize);
     for (Index j=0; j<outerEvaluationSize; ++j)
     {
       temp.startVec(j);

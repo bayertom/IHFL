@@ -72,22 +72,42 @@ class IHFL
 
 		 double nL2(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
 		 double nL1(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double nL22(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
 		 double nEll(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
 		 double nDIS(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
 		 double nABN(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
 		 double nABLP(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
 		 double nDFP(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double nLIN(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double nPLA(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double nSPH(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double nOMN(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double nANI(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double nCUR(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double nENT(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double nVER(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double nHOR(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
 		 double computeCost(const TVector <Facility>& F, const TVector <Point3D>& points, const TVector <RegressionPlane>& RP);
-
-private:
+		
+	private:
 		 double distL2(const double x1, const double y1, const double z1, const double x2, const double y2, const double z2);
 		 double distL1(const double x1, const double y1, const double z1, const double x2, const double y2, const double z2);
+		 double distL22(const double x1, const double y1, const double z1, const double x2, const double y2, const double z2);
 		 double distEll(const double x1, const double y1, const double z1, const double x2, const double y2, const double z2);
 		 double pointPlaneDist(const double qx, const double qy, const double qz, const double a, const double b, const double c, const double d);
 		 double abn(const RegressionPlane & pa, const RegressionPlane & pb);
 		 double ablp(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
 		 double dfp(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
-		
+		 double lin(const double l1a, const double l2a, const double l3a, const double l1b, const double l2b, const double l3b);
+		 double pla(const double l1a, const double l2a, const double l3a, const double l1b, const double l2b, const double l3b);
+		 double sph(const double l1a, const double l2a, const double l3a, const double l1b, const double l2b, const double l3b);
+		 double omn(const double l1a, const double l2a, const double l3a, const double l1b, const double l2b, const double l3b);
+		 double ani(const double l1a, const double l2a, const double l3a, const double l1b, const double l2b, const double l3b);
+		 double cur(const double l1a, const double l2a, const double l3a, const double l1b, const double l2b, const double l3b);
+		 double ent(const double l1a, const double l2a, const double l3a, const double l1b, const double l2b, const double l3b);
+		 double ver(const RegressionPlane& pa, const RegressionPlane& pb);
+		 double hor(const RegressionPlane& pa, const RegressionPlane& pb);
+
 		 void sideConePoint(const double a, const double b, double& h, double& r, double& t);
 		 void baseConePoint(const double a, const double b, double& h, double& r, double& t);
 		 void sideCylinderPoint(const double a, const double b, double& h, double& r, double& t);
@@ -95,7 +115,7 @@ private:
 
 		 void updateClusters(const int i, const TVector <Point3D>& points, const TVector <RegressionPlane>& RP, const GridIndexing & gi, TVector2D <Facility >& FG);
 		 void recomputeFacilityCosts (const double fc, double rat, const TVector <RegressionPlane>& RP, const pfnorm& fnorm, TVector <Point3D>& U);
-		 void getAveragePointNormal(TVector <Point3D>& U, const TVector2D <size_t>& knn_id, TVector <RegressionPlane>& RP);
+		 void getAveragePointNormal(const TVector <Point3D>& P, const TVector2D <size_t>& knn_id, TVector <RegressionPlane>& RP);
 };
 
 #endif

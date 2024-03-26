@@ -11,18 +11,59 @@
 #ifndef EIGEN_XPRHELPER_H
 #define EIGEN_XPRHELPER_H
 
+// IWYU pragma: private
 #include "../InternalHeaderCheck.h"
 
 namespace Eigen {
 
 namespace internal {
 
-template<typename IndexDest, typename IndexSrc>
-EIGEN_DEVICE_FUNC
-inline IndexDest convert_index(const IndexSrc& idx) {
-  // for sizeof(IndexDest)>=sizeof(IndexSrc) compilers should be able to optimize this away:
-  eigen_internal_assert(idx <= NumTraits<IndexDest>::highest() && "Index value to big for target type");
-  return IndexDest(idx);
+
+// useful for unsigned / signed integer comparisons when idx is intended to be non-negative
+template <typename IndexType>
+EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE typename make_unsigned<IndexType>::type returnUnsignedIndexValue(
+    const IndexType& idx) {
+  EIGEN_STATIC_ASSERT((NumTraits<IndexType>::IsInteger), THIS FUNCTION IS FOR INTEGER TYPES)
+  eigen_internal_assert(idx >= 0 && "Index value is negative and target type is unsigned");
+  using UnsignedType = typename make_unsigned<IndexType>::type;
+  return static_cast<UnsignedType>(idx);
+}
+
+template <typename IndexDest, typename IndexSrc, 
+          bool IndexDestIsInteger = NumTraits<IndexDest>::IsInteger,
+          bool IndexDestIsSigned = NumTraits<IndexDest>::IsSigned,
+          bool IndexSrcIsInteger = NumTraits<IndexSrc>::IsInteger,
+          bool IndexSrcIsSigned = NumTraits<IndexSrc>::IsSigned>
+struct convert_index_impl {
+  static inline EIGEN_DEVICE_FUNC IndexDest run(const IndexSrc& idx) {
+    eigen_internal_assert(idx <= NumTraits<IndexDest>::highest() && "Index value is too big for target type");
+    return static_cast<IndexDest>(idx);
+  }
+};
+template <typename IndexDest, typename IndexSrc>
+struct convert_index_impl<IndexDest, IndexSrc, true, true, true, false> {
+  // IndexDest is a signed integer
+  // IndexSrc is an unsigned integer
+  static inline EIGEN_DEVICE_FUNC IndexDest run(const IndexSrc& idx) {
+    eigen_internal_assert(idx <= returnUnsignedIndexValue(NumTraits<IndexDest>::highest()) &&
+                          "Index value is too big for target type");
+    return static_cast<IndexDest>(idx);
+  }
+};
+template <typename IndexDest, typename IndexSrc>
+struct convert_index_impl<IndexDest, IndexSrc, true, false, true, true> {
+  // IndexDest is an unsigned integer
+  // IndexSrc is a signed integer
+  static inline EIGEN_DEVICE_FUNC IndexDest run(const IndexSrc& idx) {
+    eigen_internal_assert(returnUnsignedIndexValue(idx) <= NumTraits<IndexDest>::highest() &&
+                          "Index value is too big for target type");
+    return static_cast<IndexDest>(idx);
+  }
+};
+
+template <typename IndexDest, typename IndexSrc>
+EIGEN_DEVICE_FUNC inline IndexDest convert_index(const IndexSrc& idx) {
+  return convert_index_impl<IndexDest, IndexSrc>::run(idx);
 }
 
 // true if T can be considered as an integral index (i.e., and integral type or enum)
@@ -190,6 +231,30 @@ struct find_best_packet
   typedef typename find_best_packet_helper<Size,typename packet_traits<T>::type>::type type;
 };
 
+template <int Size, typename PacketType,
+          bool Stop = (Size == unpacket_traits<PacketType>::size) ||
+                      is_same<PacketType, typename unpacket_traits<PacketType>::half>::value>
+struct find_packet_by_size_helper;
+template <int Size, typename PacketType>
+struct find_packet_by_size_helper<Size, PacketType, true> {
+  using type = PacketType;
+};
+template <int Size, typename PacketType>
+struct find_packet_by_size_helper<Size, PacketType, false> {
+  using type = typename find_packet_by_size_helper<Size, typename unpacket_traits<PacketType>::half>::type;
+};
+
+template <typename T, int Size>
+struct find_packet_by_size {
+  using type = typename find_packet_by_size_helper<Size, typename packet_traits<T>::type>::type;
+  static constexpr bool value = (Size == unpacket_traits<type>::size);
+};
+template <typename T>
+struct find_packet_by_size<T, 1> {
+  using type = typename unpacket_traits<T>::type;
+  static constexpr bool value = (unpacket_traits<type>::size == 1);
+};
+
 #if EIGEN_MAX_STATIC_ALIGN_BYTES>0
 constexpr inline int compute_default_alignment_helper(int ArrayBytes, int AlignmentBytes) {
   if((ArrayBytes % AlignmentBytes) == 0) {
@@ -247,7 +312,9 @@ constexpr inline unsigned compute_matrix_flags(int Options) {
 }
 
 constexpr inline int size_at_compile_time(int rows, int cols) {
-  return (rows==Dynamic || cols==Dynamic) ? Dynamic : rows * cols;
+  if (rows == 0 || cols == 0) return 0;
+  if (rows == Dynamic || cols == Dynamic) return Dynamic;
+  return rows * cols;
 }
 
 template<typename XprType> struct size_of_xpr_at_compile_time
@@ -266,6 +333,11 @@ template<typename T> struct plain_matrix_type<T,Dense>
   typedef typename plain_matrix_type_dense<T,typename traits<T>::XprKind, traits<T>::Flags>::type type;
 };
 template<typename T> struct plain_matrix_type<T,DiagonalShape>
+{
+  typedef typename T::PlainObject type;
+};
+
+template<typename T> struct plain_matrix_type<T,SkewSymmetricShape>
 {
   typedef typename T::PlainObject type;
 };
@@ -312,6 +384,11 @@ template<typename T> struct eval<T,Dense>
 };
 
 template<typename T> struct eval<T,DiagonalShape>
+{
+  typedef typename plain_matrix_type<T>::type type;
+};
+
+template<typename T> struct eval<T,SkewSymmetricShape>
 {
   typedef typename plain_matrix_type<T>::type type;
 };
@@ -554,6 +631,12 @@ template <typename B, int ProductTag> struct product_promote_storage_type<Diagon
 template <int ProductTag>             struct product_promote_storage_type<Dense,              DiagonalShape,      ProductTag> { typedef Dense ret; };
 template <int ProductTag>             struct product_promote_storage_type<DiagonalShape,      Dense,              ProductTag> { typedef Dense ret; };
 
+template <typename A, int ProductTag> struct product_promote_storage_type<A,                  SkewSymmetricShape, ProductTag> { typedef A ret; };
+template <typename B, int ProductTag> struct product_promote_storage_type<SkewSymmetricShape, B,                  ProductTag> { typedef B ret; };
+template <int ProductTag>             struct product_promote_storage_type<Dense,              SkewSymmetricShape, ProductTag> { typedef Dense ret; };
+template <int ProductTag>             struct product_promote_storage_type<SkewSymmetricShape, Dense,              ProductTag> { typedef Dense ret; };
+template <int ProductTag>             struct product_promote_storage_type<SkewSymmetricShape, SkewSymmetricShape, ProductTag> { typedef Dense ret; };
+
 template <typename A, int ProductTag> struct product_promote_storage_type<A,                  PermutationStorage, ProductTag> { typedef A ret; };
 template <typename B, int ProductTag> struct product_promote_storage_type<PermutationStorage, B,                  ProductTag> { typedef B ret; };
 template <int ProductTag>             struct product_promote_storage_type<Dense,              PermutationStorage, ProductTag> { typedef Dense ret; };
@@ -725,6 +808,54 @@ std::string demangle_flags(int f)
   return res;
 }
 #endif
+
+template<typename XprType>
+struct is_block_xpr : std::false_type {};
+
+template<typename XprType, int BlockRows, int BlockCols, bool InnerPanel>
+struct is_block_xpr<Block<XprType, BlockRows, BlockCols, InnerPanel>> : std::true_type {};
+
+template <typename XprType, int BlockRows, int BlockCols, bool InnerPanel>
+struct is_block_xpr<const Block<XprType, BlockRows, BlockCols, InnerPanel>> : std::true_type {};
+
+// Helper utility for constructing non-recursive block expressions.
+template<typename XprType>
+struct block_xpr_helper {
+  using BaseType = XprType;
+
+  // For regular block expressions, simply forward along the InnerPanel argument,
+  // which is set when calling row/column expressions.
+  static constexpr bool is_inner_panel(bool inner_panel) { return inner_panel; }
+  
+  // Only enable non-const base function if XprType is not const (otherwise we get a duplicate definition).
+  template<typename T = XprType, typename EnableIf=std::enable_if_t<!std::is_const<T>::value>>
+  static EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE BaseType& base(XprType& xpr) { return xpr; }
+  static EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE const BaseType& base(const XprType& xpr) { return xpr; }
+  static constexpr EIGEN_ALWAYS_INLINE Index row(const XprType& /*xpr*/, Index r) { return r; }
+  static constexpr EIGEN_ALWAYS_INLINE Index col(const XprType& /*xpr*/, Index c) { return c; }
+};
+
+template<typename XprType, int BlockRows, int BlockCols, bool InnerPanel>
+struct block_xpr_helper<Block<XprType, BlockRows, BlockCols, InnerPanel>> {
+  using BlockXprType = Block<XprType, BlockRows, BlockCols, InnerPanel>;
+  // Recursive helper in case of explicit block-of-block expression.
+  using NestedXprHelper = block_xpr_helper<XprType>;
+  using BaseType = typename NestedXprHelper::BaseType;
+ 
+  // For block-of-block expressions, we need to combine the InnerPannel trait
+  // with that of the block subexpression.
+  static constexpr bool is_inner_panel(bool inner_panel) { return InnerPanel && inner_panel; }
+
+  // Only enable non-const base function if XprType is not const (otherwise we get a duplicates definition).
+  template<typename T = XprType, typename EnableIf=std::enable_if_t<!std::is_const<T>::value>>
+  static EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE BaseType& base(BlockXprType& xpr) { return NestedXprHelper::base(xpr.nestedExpression()); }
+  static EIGEN_DEVICE_FUNC EIGEN_ALWAYS_INLINE const BaseType& base(const BlockXprType& xpr) { return NestedXprHelper::base(xpr.nestedExpression()); }
+  static constexpr EIGEN_ALWAYS_INLINE Index row(const BlockXprType& xpr, Index r) { return xpr.startRow() + NestedXprHelper::row(xpr.nestedExpression(), r); }
+  static constexpr EIGEN_ALWAYS_INLINE Index col(const BlockXprType& xpr, Index c) { return xpr.startCol() + NestedXprHelper::col(xpr.nestedExpression(), c); }
+};
+
+template<typename XprType, int BlockRows, int BlockCols, bool InnerPanel>
+struct block_xpr_helper<const Block<XprType, BlockRows, BlockCols, InnerPanel>> : block_xpr_helper<Block<XprType, BlockRows, BlockCols, InnerPanel>> {};
 
 } // end namespace internal
 

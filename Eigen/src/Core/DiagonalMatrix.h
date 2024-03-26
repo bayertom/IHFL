@@ -11,6 +11,7 @@
 #ifndef EIGEN_DIAGONALMATRIX_H
 #define EIGEN_DIAGONALMATRIX_H
 
+// IWYU pragma: private
 #include "./InternalHeaderCheck.h"
 
 namespace Eigen {
@@ -71,6 +72,13 @@ class DiagonalBase : public EigenBase<Derived>
     /** \returns a const reference to the derived object's vector of diagonal coefficients. */
     EIGEN_DEVICE_FUNC
     inline DiagonalVectorType& diagonal() { return derived().diagonal(); }
+
+    /** \returns the value of the coefficient as if \c *this was a dense matrix. */
+    EIGEN_DEVICE_FUNC
+    inline Scalar coeff(Index row, Index col) const {
+      eigen_assert(row >= 0 && col >= 0 && row < rows() && col <= cols());
+      return row == col ? diagonal().coeff(row) : Scalar(0);
+    }
 
     /** \returns the number of rows. */
     EIGEN_DEVICE_FUNC EIGEN_CONSTEXPR 

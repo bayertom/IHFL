@@ -11,6 +11,7 @@
 #ifndef EIGEN_SPARSELU_SUPERNODAL_MATRIX_H
 #define EIGEN_SPARSELU_SUPERNODAL_MATRIX_H
 
+// IWYU pragma: private
 #include "./InternalHeaderCheck.h"
 
 namespace Eigen {
@@ -276,9 +277,8 @@ void MappedSuperNodalMatrix<Scalar,Index_>::solveInPlace( MatrixBase<Dest>&X) co
         
         // Triangular solve 
         Map<const Matrix<Scalar,Dynamic,Dynamic, ColMajor>, 0, OuterStride<> > A( &(Lval[luptr]), nsupc, nsupc, OuterStride<>(lda) );
-        Map< Matrix<Scalar,Dynamic,Dest::ColsAtCompileTime, ColMajor>, 0, OuterStride<> > U (&(X(fsupc,0)), nsupc, nrhs, OuterStride<>(n) );
-        U = A.template triangularView<UnitLower>().solve(U); 
-        
+        typename Dest::RowsBlockXpr U = X.derived().middleRows(fsupc, nsupc);
+        U = A.template triangularView<UnitLower>().solve(U);        
         // Matrix-vector product 
         new (&A) Map<const Matrix<Scalar,Dynamic,Dynamic, ColMajor>, 0, OuterStride<> > ( &(Lval[luptr+nsupc]), nrow, nsupc, OuterStride<>(lda) );
         work.topRows(nrow).noalias() = A * U;
@@ -351,7 +351,7 @@ void MappedSuperNodalMatrix<Scalar,Index_>::solveTransposedInPlace( MatrixBase<D
 
       // Matrix-vector product with transposed submatrix
       Map<const Matrix<Scalar,Dynamic,Dynamic, ColMajor>, 0, OuterStride<> > A( &(Lval[luptr+nsupc]), nrow, nsupc, OuterStride<>(lda) );
-      Map< Matrix<Scalar,Dynamic,Dest::ColsAtCompileTime, ColMajor>, 0, OuterStride<> > U (&(X(fsupc,0)), nsupc, nrhs, OuterStride<>(n) );
+      typename Dest::RowsBlockXpr U = X.derived().middleRows(fsupc, nsupc);
       if(Conjugate)
         U = U - A.adjoint() * work.topRows(nrow);
       else

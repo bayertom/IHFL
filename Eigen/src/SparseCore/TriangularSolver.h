@@ -10,6 +10,7 @@
 #ifndef EIGEN_SPARSETRIANGULARSOLVER_H
 #define EIGEN_SPARSETRIANGULARSOLVER_H
 
+// IWYU pragma: private
 #include "./InternalHeaderCheck.h"
 
 namespace Eigen { 
@@ -272,11 +273,11 @@ struct sparse_solve_triangular_sparse_selector<Lhs,Rhs,Mode,UpLo,ColMajor>
       }
 
 
-      Index count = 0;
+//       Index count = 0;
       // FIXME compute a reference value to filter zeros
       for (typename AmbiVector<Scalar,StorageIndex>::Iterator it(tempVector/*,1e-12*/); it; ++it)
       {
-        ++ count;
+//         ++ count;
 //         std::cerr << "fill " << it.index() << ", " << col << "\n";
 //         std::cout << it.value() << "  ";
         // FIXME use insertBack

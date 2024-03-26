@@ -10,6 +10,7 @@
 #ifndef EIGEN_ARRAY_H
 #define EIGEN_ARRAY_H
 
+// IWYU pragma: private
 #include "./InternalHeaderCheck.h"
 
 namespace Eigen {
@@ -193,8 +194,9 @@ class Array
       *
       * \sa  Array(const Scalar& a0, const Scalar& a1, const Scalar& a2, const Scalar& a3, const ArgTypes&... args)
       */
-    EIGEN_DEVICE_FUNC
-    EIGEN_STRONG_INLINE Array(const std::initializer_list<std::initializer_list<Scalar>>& list) : Base(list) {}
+    EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE constexpr Array(
+        const std::initializer_list<std::initializer_list<Scalar>>& list)
+        : Base(list) {}
 
     #ifndef EIGEN_PARSED_BY_DOXYGEN
     template<typename T>

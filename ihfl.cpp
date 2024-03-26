@@ -30,11 +30,12 @@
 
 #include "knnsearch.h"
 #include "regressionplane.h"
+#include "pca.h"
 #include "isfacilitysefordeletion.h"
 
-#include <Eigen/Dense>                               
-#include <Eigen/Sparse>                              
-#include <Eigen/Core>
+#include "Eigen/Dense"                               
+#include "Eigen/Sparse"                              
+#include "Eigen/Core"
 
 double IHFL::distL2(const double x1, const double y1, const double z1, const double x2, const double y2, const double z2)
 {
@@ -43,18 +44,29 @@ double IHFL::distL2(const double x1, const double y1, const double z1, const dou
 	const double dy = y2 - y1;
 	const double dz = z2 - z1;
 
-	return fabs(dx) + fabs(dy) + fabs(dz);
+	return sqrt(dx * dx + dy * dy + dz * dz);
 }
 
 
 double IHFL::distL1(const double x1, const double y1, const double z1, const double x2, const double y2, const double z2)
+{
+	//Compute L1 distance
+	const double dx = x2 - x1;
+	const double dy = y2 - y1;
+	const double dz = z2 - z1;
+
+	return fabs(dx) + fabs(dy) + fabs(dz);
+}
+
+
+double IHFL::distL22(const double x1, const double y1, const double z1, const double x2, const double y2, const double z2)
 {
 	//Compute Euclidean distance
 	const double dx = x2 - x1;
 	const double dy = y2 - y1;
 	const double dz = z2 - z1;
 
-	return fabs(dx) + fabs(dy) + fabs(dz);
+	return dx * dx + dy * dy + dz * dz;
 }
 
 
@@ -122,6 +134,103 @@ double IHFL::dfp(const Point3D& a, const Point3D& b, const RegressionPlane& pa, 
 }
 
 
+double IHFL::lin(const double l1a, const double l2a, const double l3a, const double l1b, const double l2b, const double l3b)
+{
+	//Compute linearity
+	const double lina = (l1a - l2a) / l1a;
+	const double linb = (l1b - l2b) / l1b;
+
+	return fabs(lina - linb);
+	//return 0.5 * (lina + linb);
+}
+
+
+double IHFL::pla(const double l1a, const double l2a, const double l3a, const double l1b, const double l2b, const double l3b)
+{
+	//Compute planarity
+	const double plaa = (l2a - l3a) / l1a;
+	const double plab = (l2b - l3b) / l1b;
+
+	return 0.5 * (plaa + plab);
+}
+
+
+double IHFL::sph(const double l1a, const double l2a, const double l3a, const double l1b, const double l2b, const double l3b)
+{
+	//Compute sphericity
+	const double spha = l3a / l1a;
+	const double sphb = l3b / l1b;
+
+	return fabs(spha - sphb);
+}
+
+
+double IHFL::omn(const double l1a, const double l2a, const double l3a, const double l1b, const double l2b, const double l3b)
+{
+	//Compute omnivariance
+	const double omna = pow(l1a * l2a * l3a, 1 / 3.0);
+	const double omnb = pow(l1b * l2b * l3b, 1 / 3.0);
+
+	return fabs(omna - omnb);
+}
+
+
+double IHFL::ani(const double l1a, const double l2a, const double l3a, const double l1b, const double l2b, const double l3b)
+{
+	//Compute anisotropy
+	const double ania = (l1a - l3a) / l1a;
+	const double anib = (l1b - l3b) / l1b;
+
+	return fabs(ania - anib);
+}
+
+
+double IHFL::cur(const double l1a, const double l2a, const double l3a, const double l1b, const double l2b, const double l3b)
+{
+	//Compute curvature change
+	const double cura = l3a / (l1a + l2a + l3a);
+	const double curb = l3b / (l1b + l2b + l3b);
+
+	return fabs(cura - curb);
+}
+
+
+double IHFL::ent(const double l1a, const double l2a, const double l3a, const double l1b, const double l2b, const double l3b)
+{
+	//Eigen entropy
+	const double enta = - (l1a * log(l1a) + l2a * log(l2a) + l3a * log(l3a));
+	const double entb = - (l1b * log(l1b) + l2b * log(l2b) + l3b * log(l3b));
+
+	return fabs(enta - entb);
+}
+
+
+double IHFL::ver(const RegressionPlane& pa, const RegressionPlane& pb)
+{
+	//Verticality, measured by the slope
+	const double norm1 = sqrt(pa.a * pa.a + pa.b * pa.b + pa.c * pa.c);
+	const double f_slope1 = acos(pa.c / norm1);
+
+	const double norm2 = sqrt(pb.a * pb.a + pb.b * pb.b + pb.c * pb.c);
+	const double f_slope2 = acos(pb.c / norm2);
+
+	return 0.5 * fabs(log(f_slope1) + log(f_slope2));
+}
+
+
+double IHFL::hor(const RegressionPlane& pa, const RegressionPlane& pb)
+{
+	//Horizontality, measured by the slope
+	const double norm1 = sqrt(pa.a * pa.a + pa.b * pa.b + pa.c * pa.c);
+	const double f_slope1 = acos(pa.c / norm1);
+
+	const double norm2 = sqrt(pb.a * pb.a + pb.b * pb.b + pb.c * pb.c);
+	const double f_slope2 = acos(pb.c / norm2);
+
+	return 0.5 * (log(f_slope1) + log(f_slope2));
+}
+
+
 double IHFL::nL2(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
 {
 	//L2 norm
@@ -135,6 +244,12 @@ double IHFL::nL1(const Point3D& a, const Point3D& b, const RegressionPlane& pa, 
 	return distL1(a.x, a.y, a.z, b.x, b.y, b.z);
 }
 
+
+double IHFL::nL22(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+{
+	//L22 norm
+	return distL22(a.x, a.y, a.z, b.x, b.y, b.z);
+}
 
 
 double IHFL::nEll(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
@@ -224,6 +339,185 @@ double IHFL::nDFP(const Point3D& a, const Point3D& b, const RegressionPlane& pa,
 		return (mju * dh + (1 - mju) * dab) + mju * pow(dab - lambda, l);
 }
 
+
+double IHFL::nLIN(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+{
+	//Pseudometric: Linearity
+	const double dab = nL2(a, b, pa, pb);
+
+	//Identical points
+	if (dab < std::numeric_limits<float>::min())
+		return 0;
+
+	//Compute linearity criterion
+	const double dh = lin(pa.lambda1, pa.lambda2, pa.lambda3, pb.lambda1, pb.lambda2, pb.lambda3);
+
+	//Constrained hybrid pseudometric
+	if (dab < lambda)
+		return (mju * dh + (1 - mju) * dab);
+	else
+		return (mju * dh + (1 - mju) * dab) + mju * pow(dab - lambda, l);
+}
+
+
+double IHFL::nPLA(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+{
+	//Pseudometric: Planarity
+	const double dab = nL2(a, b, pa, pb);
+
+	//Identical points
+	if (dab < std::numeric_limits<float>::min())
+		return 0;
+
+	//Compute panarity criterion
+	const double dh = pla(pa.lambda1, pa.lambda2, pa.lambda3, pb.lambda1, pb.lambda2, pb.lambda3);
+
+	//Constrained hybrid pseudometric
+	if (dab < lambda)
+		return (mju * dh + (1 - mju) * dab);
+	else
+		return (mju * dh + (1 - mju) * dab) + mju * pow(dab - lambda, l);
+}
+
+
+double IHFL::nSPH(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+{
+	//Pseudometric: Sphericity
+	const double dab = nL2(a, b, pa, pb);
+
+	//Identical points
+	if (dab < std::numeric_limits<float>::min())
+		return 0;
+
+	//Compute sphericity criterion
+	const double dh = sph(pa.lambda1, pa.lambda2, pa.lambda3, pb.lambda1, pb.lambda2, pb.lambda3);
+
+	//Constrained hybrid pseudometric
+	if (dab < lambda)
+		return (mju * dh + (1 - mju) * dab);
+	else
+		return (mju * dh + (1 - mju) * dab) + mju * pow(dab - lambda, l);
+}
+
+
+double IHFL::nOMN(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+{
+	//Pseudometric: Omnivariance
+	const double dab = nL2(a, b, pa, pb);
+
+	//Identical points
+	if (dab < std::numeric_limits<float>::min())
+		return 0;
+
+	//Compute omnivariance criterion
+	const double dh = omn(pa.lambda1, pa.lambda2, pa.lambda3, pb.lambda1, pb.lambda2, pb.lambda3);
+
+	//Constrained hybrid pseudometric
+	if (dab < lambda)
+		return (mju * dh + (1 - mju) * dab);
+	else
+		return (mju * dh + (1 - mju) * dab) + mju * pow(dab - lambda, l);
+}
+
+
+double IHFL::nANI(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+{
+	//Pseudometric: Anisotropy
+	const double dab = nL2(a, b, pa, pb);
+
+	//Identical points
+	if (dab < std::numeric_limits<float>::min())
+		return 0;
+
+	//Compute anisotropy criterion
+	const double dh = ani(pa.lambda1, pa.lambda2, pa.lambda3, pb.lambda1, pb.lambda2, pb.lambda3);
+
+	//Constrained hybrid pseudometric
+	if (dab < lambda)
+		return (mju * dh + (1 - mju) * dab);
+	else
+		return (mju * dh + (1 - mju) * dab) + mju * pow(dab - lambda, l);
+}
+
+
+double IHFL::nCUR(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+{
+	//Pseudometric: Curvature change
+	const double dab = nL2(a, b, pa, pb);
+
+	//Identical points
+	if (dab < std::numeric_limits<float>::min())
+		return 0;
+
+	//Compute curvature criterion
+	const double dh = cur(pa.lambda1, pa.lambda2, pa.lambda3, pb.lambda1, pb.lambda2, pb.lambda3);
+
+	//Constrained hybrid pseudometric
+	if (dab < lambda)
+		return (mju * dh + (1 - mju) * dab);
+	else
+		return (mju * dh + (1 - mju) * dab) + mju * pow(dab - lambda, l);
+}
+
+
+double IHFL::nENT(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+{
+	//Pseudometric: Eigen entropy
+	const double dab = nL2(a, b, pa, pb);
+
+	//Identical points
+	if (dab < std::numeric_limits<float>::min())
+		return 0;
+
+	//Compute eigen entropy
+	const double dh = ent(pa.lambda1, pa.lambda2, pa.lambda3, pb.lambda1, pb.lambda2, pb.lambda3);
+
+	//Constrained hybrid pseudometric
+	if (dab < lambda)
+		return (mju * dh + (1 - mju) * dab);
+	else
+		return (mju * dh + (1 - mju) * dab) + mju * pow(dab - lambda, l);
+}
+
+
+double IHFL::nVER(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+{
+	//Pseudometric: verticality
+	const double dab = nL2(a, b, pa, pb);
+
+	//Identical points
+	if (dab < std::numeric_limits<float>::min())
+		return 0;
+
+	//Compute verticality
+	const double dh = ver(pa, pb);
+
+	//Constrained hybrid pseudometric
+	if (dab < lambda)
+		return (mju * dh + (1 - mju) * dab);
+	else
+		return (mju * dh + (1 - mju) * dab) + mju * pow(dab - lambda, l);
+}
+
+
+double IHFL::nHOR(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+{
+	//Pseudometric: horizontality
+	const double dab = nL2(a, b, pa, pb);
+
+	//Identical points
+	if (dab < std::numeric_limits<float>::min())
+		return 0;
+
+	//Compute horizontality
+	const double dh = hor(pa, pb);
+
+	//Constrained hybrid pseudometric
+	if (dab < lambda)
+		return (mju * dh + (1 - mju) * dab);
+	else
+		return (mju * dh + (1 - mju) * dab) + mju * pow(dab - lambda, l);
+}
 
 void IHFL::generateClusters(const double w, const double h, const double rad, const int nc, const int n, TVector <Point3D>& U)
 {
@@ -413,26 +707,27 @@ void IHFL::recomputeFacilityCosts(const double fc, double rat, const TVector <Re
 
 	for (int i = 0; i < U.size(); i++)
 	{
-		//ABN
-		if (fnorm == &IHFL::nDIS || fnorm == &IHFL::nABN || fnorm == &IHFL::nABLP)
+		//Pseudometrics
+		if (fnorm == &IHFL::nDIS || fnorm == &IHFL::nABN || fnorm == &IHFL::nABLP || fnorm == &IHFL::nLIN || fnorm == &IHFL::nPLA ||
+		    fnorm == &IHFL::nSPH || fnorm == &IHFL::nOMN || fnorm == &IHFL::nANI || fnorm == &IHFL::nCUR || fnorm == &IHFL::nVER)
 		{
 			//Compute new facility cost
-			U[i].fc = std::max(std::min(fc * fc / (RP[i].abn + eps), rat * fc), fc / rat);
+			U[i].fc = std::max(std::min(fc * fc / (RP[i].height + eps), rat * fc), fc / rat);
 		}
 		
 		//DFP + L1 + L2 + ...
-		else if (fnorm == &IHFL::nDFP || fnorm == &IHFL::nL2 || fnorm == &IHFL::nL1 || fnorm == &IHFL::nEll)
+		else if (fnorm == &IHFL::nDFP || fnorm == &IHFL::nL2 || fnorm == &IHFL::nL1 || fnorm == &IHFL::nL22 || fnorm == &IHFL::nEll)
 		{
-			U[i].fc = std::max(std::min(fc * fc / (RP[i].sigma + eps), rat * fc), fc / rat);
+			U[i].fc = std::max(std::min(fc * fc / (RP[i].height + eps), rat * fc), fc / rat);
 		}
 	}
 }
 
 
-void IHFL::getAveragePointNormal(TVector <Point3D>& U, const TVector2D <size_t>& knn_id, TVector <RegressionPlane>& RP)
+void IHFL::getAveragePointNormal(const TVector <Point3D>& P, const TVector2D <size_t>& knn_id, TVector <RegressionPlane>& RP)
 {
 	//Compute average point normal using SVD decomposition, regression error and ABN
-	const int n = U.size();
+	const int n = P.size();
 
 	std::cout << ">> SVD decomposition: ";
 	for (int i = 0; i < n; i++)
@@ -440,35 +735,28 @@ void IHFL::getAveragePointNormal(TVector <Point3D>& U, const TVector2D <size_t>&
 		//Add all neighbors to the list
 		TVector <Point3D> KNN;
 		for (size_t index : knn_id[i])
-			KNN.push_back(U[index]);
+			KNN.push_back(P[index]);
+
+		//Convert nearest neighbors to matrix A
+		const int m = KNN.size();
+		Eigen::MatrixXd A(m, 3);
+
+		for (int j = 0; j < m; j++)
+		{
+			A(j, 0) = KNN[j].x;
+			A(j, 1) = KNN[j].y;
+			A(j, 2) = KNN[j].z;
+		}
+
+		//Compute PCA
+		auto [U, S, V] = PCA::pca(A);
 
 		//Compute regression plane using SVD
 		RegressionPlane plane;
-		plane.computeRegressionPlane(KNN);
+		plane.computeRegressionPlane(A, S, V);
 
 		//Add average normal vector and regression error to the list
-		//ABN will be computed later
 		RP.push_back(plane);
-	}
-
-	//Compute max ABN for points and their neighbors
-	for (int i = 0; i < n; i++)
-	{
-		//Find max ABN
-		const size_t index0 = knn_id[i][0];
-		double abn_max = 0;
-		for (size_t index : knn_id[i])
-		{
-			//const double abn_j = abn(AN[index0], AN[index]);
-			const double abn_j = nL2(U[index0], U[index], RP[index0], RP[index]) * sin(abn(RP[index0], RP[index]) / 2);
-
-			//Actualize maximum
-			if (abn_j > abn_max)
-				abn_max = abn_j;
-		}
-
-		//Store ABN max value to the list
-		RP[i].abn = abn_max;
 	}
 
 	std::cout << "OK \n";
@@ -488,19 +776,14 @@ void IHFL::clusterizeIHFL(TVector <Point3D>&U, const double fc, const GridIndexi
 	KNNSearch search (U);
 	search.findAllKNN(U, K, knn_id, knn_dist);
 
-	//Compute average normals, regression errors
+	//Compute average normals, recompute facility cost
 	getAveragePointNormal(U, knn_id, RP);
-
+	
 	//Recompute facility costs according to normals (replace old values)]
 	const double multiplier = 10.0;
+	std::cout << non_uniform_cl;
 	if (non_uniform_cl)
-	{
-		//if (fnorm != &IHFL::nL2)
-			recomputeFacilityCosts(fc, multiplier, RP, fnorm, U);
-		//else
-			//recomputeFacilityCosts(fc, multiplier * multiplier * multiplier, RP, fnorm, U);
-			//recomputeFacilityCosts(lambda, fc, 5.0, RP, &IHFL::nL2, U);
-	}
+		recomputeFacilityCosts(fc, multiplier, RP, fnorm, U);
 
 	//Process all points
 	std::cout << ">> Clusterization: ";
@@ -563,15 +846,18 @@ void IHFL::updateClusters(const int i, const TVector <Point3D>& points, const TV
 			const int p_idx2 = abs(fac.p_idx) - 1;
 
 			//Norm and pseudonorm
-			const double dist_pf = distL2(points[i].x, points[i].y, points[i].z, points[p_idx2].x, points[p_idx2].y, points[p_idx2].z);       //Distance between point p and facility
-			const double dpf = (this->*fnorm)(points[i], points[p_idx2], RP[i], RP[p_idx2]);				//Pseudonorm between point p and facility
+			const double dist_pf = distL2(points[i].x, points[i].y, points[i].z, points[p_idx2].x, points[p_idx2].y, points[p_idx2].z);       //Distance between point p[i] and facility
+			const double dpf = (this->*fnorm)(points[i], points[p_idx2], RP[i], RP[p_idx2]);								   //Pseudonorm between point p[i] and facility
+
+			//const double dist_pf = distL2( points[p_idx2].x, points[p_idx2].y, points[p_idx2].z, points[i].x, points[i].y, points[i].z);       //Distance between point p and facility
+			//const double dpf = (this->*fnorm)(points[p_idx2], points[i], RP[p_idx2], RP[i]);				//Pseudonorm between point p and facility
 
 			//Cummulated values
 			double dc_all = points[i].fc - fac.fc;										//Cost diifference: reassignment of all cluster to  p - cost for the old facility deletition
 			double dc_closer = points[i].fc - dpf;										//Cost difference: reassignment of cluster points closer to p
 
-			//Reallocate only according to near facilities
-			if (dist_pf < 3.0 * lambda)
+			//Reallocate only according to near facilities (closer than 2 * lambda)
+			if (dist_pf < 2.0 * lambda)
 			{
 				//Distance point and the current facility: Strategy S1
 				if (dpf < c_nearest && dpf > 0)										//Actualize distance to the nearest facility
@@ -591,8 +877,11 @@ void IHFL::updateClusters(const int i, const TVector <Point3D>& points, const TV
 					const int u_idx2 = abs(u_idx) - 1;
 
 					//Compute pseudonorms using pointers to member functions
-					const double dup = (this->*fnorm)(points[u_idx2], points[i], RP[u_idx2], RP[i]);		//Pseudonorm of the cluster point u to the proposed new center p
-					const double duf = (this->*fnorm)(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]);	//Pseudonorm of the cluster point u to its cluster center f.u
+					//const double dup = (this->*fnorm)(points[u_idx2], points[i], RP[u_idx2], RP[i]);		//Pseudonorm of the cluster point u to the proposed new center p[i]
+					//const double duf = (this->*fnorm)(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]);	//Pseudonorm of the cluster point u to its cluster center f.u
+
+					const double dup = (this->*fnorm)(points[i], points[u_idx2], RP[i], RP[u_idx2]);		//Pseudonorm of the cluster point u to the proposed new center p[i]
+					const double duf = (this->*fnorm)(points[p_idx2], points[u_idx2], RP[p_idx2], RP[u_idx2]);	//Pseudonorm of the cluster point u to its cluster center f.u
 
 					//Current facility point u is closer to p: cost for the reassignment u to the new center p
 					//Strategy S4, compute new cost increment
@@ -748,12 +1037,12 @@ void IHFL::clusterStatistics(const TVector <Point3D>& points, const TVector2D <F
 			//Browse all points ui of the facility
 			int i = 0;
 			double f_radius = 0, f_abn = 0, f_dfp = 0, f_aspect = -1, f_dim = 0;
-			Eigen::MatrixXd M(f.U_idxs.size(), 3);
 
 			//Reset sign and shift of the index
 			const int p_idx2 = abs(f.p_idx) - 1;
 
 			//Process all clients
+			Eigen::MatrixXd M(f.U_idxs.size(), 3);
 			for (const int u_idx : f.U_idxs)
 			{
 				//Reset sign and shift of the index
@@ -772,23 +1061,22 @@ void IHFL::clusterStatistics(const TVector <Point3D>& points, const TVector2D <F
 				i++;
 			}
 
-			//PCA decomposition
+			//PCA Analysis
 			if (f.U_idxs.size() > 0)
 			{
-				//PCA analysis
-				Eigen::MatrixXd centered = M.rowwise() - M.colwise().mean();
-				Eigen::MatrixXd cov = centered.adjoint() * centered;
-				Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eig(cov);
+				//Perform PCA
+				auto [U, S, V] = PCA::pca(M);
 
-				//Eigen vectors and eigen values
-				Eigen::MatrixXd eivect = eig.eigenvectors();
-				Eigen::MatrixXd eival = eig.eigenvalues();
+				//Store singular values: descendent sort
+				double lambda1 = S(0, 0);
+				double lambda2 = S(1, 0);
+				double lambda3 = S(2, 0);
 
 				//Compute cluster aspect
-				f_aspect = (eival(2, 0) == 0 ? -1 : eival(1, 0) / eival(2, 0));
+				f_aspect = (lambda1 == 0 ? -1 : lambda2 / lambda1);
 
-				//Sum of eigen values
-				const double lambda_sum = eival(0, 0) + eival(1, 0) + eival(2, 0);
+				//Sum of singular values
+				const double lambda_sum = lambda1 + lambda2 + lambda3;
 
 				//Cluster dimension 0
 				if (lambda_sum == 0)
@@ -797,16 +1085,17 @@ void IHFL::clusterStatistics(const TVector <Point3D>& points, const TVector2D <F
 				//Cluster dimension: 0 - 3
 				else
 				{
-					//Fractions of eigen values
-					const double lambda1f = eival(0, 0) / lambda_sum;
-					const double lambda2f = eival(1, 0) / lambda_sum;
-					const double lambda3f = eival(2, 0) / lambda_sum;
+					//Fractions of singular values
+					const double lambda1f = lambda1 / lambda_sum;
+					const double lambda2f = lambda2 / lambda_sum;
+					const double lambda3f = lambda3 / lambda_sum;
 
+					//Compute sum
 					const double lambda_sum = lambda1f + lambda2f + lambda3f;
 
 					//Set cluster dimensions
 					//Point
-					if (lambda3f < 0.01)	
+					if (lambda1f < 0.01)	
 						f_dim = 0;
 
 					//Line	
@@ -814,7 +1103,7 @@ void IHFL::clusterStatistics(const TVector <Point3D>& points, const TVector2D <F
 						f_dim = 1;
 
 					//Circle
-					else if (lambda1f / lambda_sum < 0.01)
+					else if (lambda3f / lambda_sum < 0.01)
 						f_dim = 2;
 
 					//Sphere

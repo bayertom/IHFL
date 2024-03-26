@@ -130,9 +130,10 @@
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
       <Optimization>MaxSpeed</Optimization>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -149,6 +150,7 @@
     <ClCompile Include="kdpointtile.cpp" />
     <ClCompile Include="knnsearch.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="pca.cpp" />
     <ClCompile Include="regressionplane.cpp" />
     <ClCompile Include="splitdataset.cpp" />
   </ItemGroup>
@@ -162,6 +164,7 @@
     <ClInclude Include="kdpointtile.h" />
     <ClInclude Include="knnsearch.h" />
     <ClInclude Include="nanoflann.hpp" />
+    <ClInclude Include="pca.h" />
     <ClInclude Include="pfnorm.h" />
     <ClInclude Include="point3d.h" />
     <ClInclude Include="regressionplane.h" />

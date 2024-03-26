@@ -41,7 +41,7 @@
 int main(int argc, char* argv[])
 {
 	std::cout << "*** FACILITY LOCATION CLUSTERING WITH PSEUDO-METRICS *** \n";
-	std::cout << "***   (ver. 2.1, 09/2023, bayertom@natur.cuni.cz)    *** \n";
+	std::cout << "***   (ver. 2.2, 11/2023, bayertom@natur.cuni.cz)    *** \n";
 	//Testing data
 	//std::string file_name = "data\\test_pseudometrics.txt";
 	//std::string file_name = "data\\ETH\\eth_mid.txt";
@@ -51,11 +51,12 @@ int main(int argc, char* argv[])
 	//std::string file_name = "data\\Sima\\Canopy\\canopy_small.txt";
 	//std::string file_name = "data\\MP\\boulder_small.txt";
 	//std::string file_name = "data\\Plane\\points1000_1.txt";
-
+	//std::string file_name = "e:\\Tomas\\CPP\\Clustering\\Clustering\\Tests\\IHFLN\\Boulders\\data_boulder\\boulder4\\sub\\boulder4.txt";
+	
 	//Parameters of the clusterization algorithm
 	bool non_uniform_cl = false, export_dxf = false, cluster_statistics = false;
 	int knn = 50, ns = 100000, l = 1;
-	double fc = 0.01, lambda = 0.25, bin = lambda, mju = 0.95;
+	double fc = 0.10, lambda = 1.00, bin = lambda, mju = 0.95;
 	double x_scale = 1.0, y_scale = 1.0, z_scale = 1.0;
 	pfnorm fnorm = &IHFL::nDFP;
 	std::string file_name, fnorm_text = "dfp";
@@ -184,15 +185,86 @@ int main(int argc, char* argv[])
 					fnorm_text = "l1";
 				}
 
-				//L1 norm
+				//L22 norm
+				else if (!strcmp("l22", value))
+				{
+					fnorm = &IHFL::nL22;
+					fnorm_text = "l22";
+				}
+
+				//Elliptic norm
 				else if (!strcmp("ell", value))
 				{
 					fnorm = &IHFL::nEll;
 					fnorm_text = "ell";
 				}
 
-				//else
-				//	throw std::exception("Exception: Invalid clusterization norm type in command line!");
+				//Linearity pseudonorm
+				else if (!strcmp("lin", value))
+				{
+					fnorm = &IHFL::nLIN;
+					fnorm_text = "lin";
+				}
+
+				//Linearity pseudonorm
+				else if (!strcmp("pla", value))
+				{
+					fnorm = &IHFL::nPLA;
+					fnorm_text = "pla";
+				}
+
+				//Sphericity pseudonorm
+				else if (!strcmp("sph", value))
+				{
+					fnorm = &IHFL::nSPH;
+					fnorm_text = "sph";
+				}
+
+				//Omnivariance pseudonorm
+				else if (!strcmp("omn", value))
+				{
+					fnorm = &IHFL::nOMN;
+					fnorm_text = "omn";
+				}
+
+				//Anisotropy pseudonorm
+				else if (!strcmp("ani", value))
+				{
+					fnorm = &IHFL::nANI;
+					fnorm_text = "ani";
+				}
+
+				//Curvature change pseudonorm
+				else if (!strcmp("cur", value))
+				{
+					fnorm = &IHFL::nCUR;
+					fnorm_text = "cur";
+				}
+
+				//Eigen entropy pseudonorm
+				else if (!strcmp("ent", value))
+				{
+					fnorm = &IHFL::nENT;
+					fnorm_text = "ent";
+				}
+
+				//Verticality pseudonorm
+				else if (!strcmp("ver", value))
+				{
+					fnorm = &IHFL::nVER;
+					fnorm_text = "ver";
+				}
+
+				//Horizontality pseudonorm
+				else if (!strcmp("hor", value))
+				{
+					fnorm = &IHFL::nHOR;
+					fnorm_text = "hor";
+				}
+
+				//Exception
+				else
+					throw std::exception("Exception: Invalid clusterization norm type in command line!");
 			}
 
 			//Set the facility cost

@@ -10,6 +10,7 @@
 #ifndef EIGEN_GENERAL_MATRIX_VECTOR_H
 #define EIGEN_GENERAL_MATRIX_VECTOR_H
 
+// IWYU pragma: private
 #include "../InternalHeaderCheck.h"
 
 namespace Eigen {
@@ -361,6 +362,10 @@ EIGEN_DEVICE_FUNC EIGEN_DONT_INLINE void general_matrix_vector_product<Index,Lhs
          HasQuarter = (int)ResPacketSizeQuarter < (int)ResPacketSizeHalf
   };
 
+  const Index fullColBlockEnd = LhsPacketSize * (cols / LhsPacketSize);
+  const Index halfColBlockEnd = LhsPacketSizeHalf * (cols / LhsPacketSizeHalf);
+  const Index quarterColBlockEnd = LhsPacketSizeQuarter * (cols / LhsPacketSizeQuarter);
+
   Index i=0;
   for(; i<n8; i+=8)
   {
@@ -373,8 +378,7 @@ EIGEN_DEVICE_FUNC EIGEN_DONT_INLINE void general_matrix_vector_product<Index,Lhs
               c6 = pset1<ResPacket>(ResScalar(0)),
               c7 = pset1<ResPacket>(ResScalar(0));
 
-    Index j=0;
-    for(; j+LhsPacketSize<=cols; j+=LhsPacketSize)
+    for (Index j = 0; j < fullColBlockEnd; j += LhsPacketSize)
     {
       RhsPacket b0 = rhs.template load<RhsPacket, Unaligned>(j,0);
 
@@ -395,7 +399,8 @@ EIGEN_DEVICE_FUNC EIGEN_DONT_INLINE void general_matrix_vector_product<Index,Lhs
     ResScalar cc5 = predux(c5);
     ResScalar cc6 = predux(c6);
     ResScalar cc7 = predux(c7);
-    for(; j<cols; ++j)
+
+    for (Index j = fullColBlockEnd; j < cols; ++j)
     {
       RhsScalar b0 = rhs(j,0);
 
@@ -424,8 +429,7 @@ EIGEN_DEVICE_FUNC EIGEN_DONT_INLINE void general_matrix_vector_product<Index,Lhs
               c2 = pset1<ResPacket>(ResScalar(0)),
               c3 = pset1<ResPacket>(ResScalar(0));
 
-    Index j=0;
-    for(; j+LhsPacketSize<=cols; j+=LhsPacketSize)
+    for (Index j = 0; j < fullColBlockEnd; j += LhsPacketSize)
     {
       RhsPacket b0 = rhs.template load<RhsPacket, Unaligned>(j,0);
 
@@ -438,7 +442,8 @@ EIGEN_DEVICE_FUNC EIGEN_DONT_INLINE void general_matrix_vector_product<Index,Lhs
     ResScalar cc1 = predux(c1);
     ResScalar cc2 = predux(c2);
     ResScalar cc3 = predux(c3);
-    for(; j<cols; ++j)
+
+    for(Index j = fullColBlockEnd; j < cols; ++j)
     {
       RhsScalar b0 = rhs(j,0);
 
@@ -457,8 +462,7 @@ EIGEN_DEVICE_FUNC EIGEN_DONT_INLINE void general_matrix_vector_product<Index,Lhs
     ResPacket c0 = pset1<ResPacket>(ResScalar(0)),
               c1 = pset1<ResPacket>(ResScalar(0));
 
-    Index j=0;
-    for(; j+LhsPacketSize<=cols; j+=LhsPacketSize)
+    for (Index j = 0; j < fullColBlockEnd; j += LhsPacketSize)
     {
       RhsPacket b0 = rhs.template load<RhsPacket, Unaligned>(j,0);
 
@@ -467,7 +471,8 @@ EIGEN_DEVICE_FUNC EIGEN_DONT_INLINE void general_matrix_vector_product<Index,Lhs
     }
     ResScalar cc0 = predux(c0);
     ResScalar cc1 = predux(c1);
-    for(; j<cols; ++j)
+
+    for(Index j = fullColBlockEnd; j < cols; ++j)
     {
       RhsScalar b0 = rhs(j,0);
 
@@ -482,15 +487,15 @@ EIGEN_DEVICE_FUNC EIGEN_DONT_INLINE void general_matrix_vector_product<Index,Lhs
     ResPacket c0 = pset1<ResPacket>(ResScalar(0));
     ResPacketHalf c0_h = pset1<ResPacketHalf>(ResScalar(0));
     ResPacketQuarter c0_q = pset1<ResPacketQuarter>(ResScalar(0));
-    Index j=0;
-    for(; j+LhsPacketSize<=cols; j+=LhsPacketSize)
+
+    for (Index j = 0; j < fullColBlockEnd; j += LhsPacketSize)
     {
       RhsPacket b0 = rhs.template load<RhsPacket,Unaligned>(j,0);
       c0 = pcj.pmadd(lhs.template load<LhsPacket,LhsAlignment>(i,j),b0,c0);
     }
     ResScalar cc0 = predux(c0);
     if (HasHalf) {
-      for(; j+LhsPacketSizeHalf<=cols; j+=LhsPacketSizeHalf)
+      for (Index j = fullColBlockEnd; j < halfColBlockEnd; j += LhsPacketSizeHalf)
         {
           RhsPacketHalf b0 = rhs.template load<RhsPacketHalf,Unaligned>(j,0);
           c0_h = pcj_half.pmadd(lhs.template load<LhsPacketHalf,LhsAlignment>(i,j),b0,c0_h);
@@ -498,14 +503,14 @@ EIGEN_DEVICE_FUNC EIGEN_DONT_INLINE void general_matrix_vector_product<Index,Lhs
       cc0 += predux(c0_h);
     }
     if (HasQuarter) {
-      for(; j+LhsPacketSizeQuarter<=cols; j+=LhsPacketSizeQuarter)
+      for (Index j = halfColBlockEnd; j < quarterColBlockEnd; j += LhsPacketSizeQuarter)
         {
           RhsPacketQuarter b0 = rhs.template load<RhsPacketQuarter,Unaligned>(j,0);
           c0_q = pcj_quarter.pmadd(lhs.template load<LhsPacketQuarter,LhsAlignment>(i,j),b0,c0_q);
         }
       cc0 += predux(c0_q);
     }
-    for(; j<cols; ++j)
+    for (Index j = quarterColBlockEnd; j < cols; ++j)
     {
       cc0 += cj.pmul(lhs(i,j), rhs(j,0));
     }

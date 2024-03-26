@@ -11,6 +11,7 @@
 #ifndef EIGEN_BICGSTAB_H
 #define EIGEN_BICGSTAB_H
 
+// IWYU pragma: private
 #include "./InternalHeaderCheck.h"
 
 namespace Eigen { 
@@ -51,9 +52,9 @@ bool bicgstab(const MatrixType& mat, const Rhs& rhs, Dest& x,
     x.setZero();
     return true;
   }
-  Scalar rho    = 1;
-  Scalar alpha  = 1;
-  Scalar w      = 1;
+  Scalar rho    (1);
+  Scalar alpha  (1);
+  Scalar w      (1);
   
   VectorType v = VectorType::Zero(n), p = VectorType::Zero(n);
   VectorType y(n),  z(n);
