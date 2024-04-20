@@ -24,6 +24,8 @@
 void RegressionPlane::computeRegressionPlane(const Eigen::MatrixXd& A, const Eigen::MatrixXd &S, Eigen::MatrixXd &V)
 {
 	//Compute regression plane using PCA
+
+	//Compute points centroid (mean of their coordinates represented by columns)
 	Eigen::RowVectorXd M = A.colwise().mean();
 
 	//Store eigen values: descendent sort
@@ -31,12 +33,14 @@ void RegressionPlane::computeRegressionPlane(const Eigen::MatrixXd& A, const Eig
 	lambda2 = S(1, 0);
 	lambda3 = S(2, 0);
 
-	//Dimensions
+	//Rotate the input set parallel with the coordinate axes
 	Eigen::MatrixXd AT = A * V;
+
+	//Compute extreme values of rotated coordinates
 	Eigen::MatrixXd MAX = AT.colwise().maxCoeff();
 	Eigen::MatrixXd MIN = AT.colwise().minCoeff();
 
-	//Compute sigma: S[min] cummulated distance of points from the plane
+	//Compute height of the min-max box (difference of Z-coordinates)
 	height = MAX(0, 2) - MIN(0, 2);
 	
 	//Compute parameters a, b, c of the regression plane (last column of V)
@@ -44,6 +48,6 @@ void RegressionPlane::computeRegressionPlane(const Eigen::MatrixXd& A, const Eig
 	b = V(1, 2);
 	c = V(2, 2);
 
-	//Compute parameter d of the regression plane
+	//Compute parameter d of the regression plane passing through M
 	d = -(a * M(0, 0) + b * M(0, 1) + c * M(0, 2));
 }

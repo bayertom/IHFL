@@ -1,7 +1,7 @@
 // Description: Incremental heuristic facility location clustering of the point cloud
 // Main cpp file: read data, perform clusterization, write data
 
-// Copyright (c) 2021 - 2023
+// Copyright (c) 2021 - 2024
 // Tomas Bayer
 // Charles University in Prague, Faculty of Science
 // bayertom@natur.cuni.cz
@@ -41,7 +41,7 @@
 int main(int argc, char* argv[])
 {
 	std::cout << "*** FACILITY LOCATION CLUSTERING WITH PSEUDO-METRICS *** \n";
-	std::cout << "***   (ver. 2.2, 11/2023, bayertom@natur.cuni.cz)    *** \n";
+	std::cout << "***   (ver. 2.4, 4/2024, bayertom@natur.cuni.cz)    *** \n";
 	//Testing data
 	//std::string file_name = "data\\test_pseudometrics.txt";
 	//std::string file_name = "data\\ETH\\eth_mid.txt";
@@ -52,14 +52,15 @@ int main(int argc, char* argv[])
 	//std::string file_name = "data\\MP\\boulder_small.txt";
 	//std::string file_name = "data\\Plane\\points1000_1.txt";
 	//std::string file_name = "e:\\Tomas\\CPP\\Clustering\\Clustering\\Tests\\IHFLN\\Boulders\\data_boulder\\boulder4\\sub\\boulder4.txt";
-	
+	//std::string file_name = "e:\\Tomas\\CPP\\IHFL\\data\\IK\\tree14.txt";
+
 	//Parameters of the clusterization algorithm
 	bool non_uniform_cl = false, export_dxf = false, cluster_statistics = false;
 	int knn = 50, ns = 100000, l = 1;
 	double fc = 0.10, lambda = 1.00, bin = lambda, mju = 0.95;
 	double x_scale = 1.0, y_scale = 1.0, z_scale = 1.0;
-	pfnorm fnorm = &IHFL::nDFP;
-	std::string file_name, fnorm_text = "dfp";
+	pfnorm fnorm = &IHFL::nABN;
+	std::string file_name, fnorm_text = "abn";
 
 	
 	/* Testing data
@@ -371,7 +372,7 @@ int main(int argc, char* argv[])
 	}
 
 	//Create file name part unique for all files
-	std::string file_name_part = "_" + fnorm_text + "_l" + std::to_string(l) + "_unif" + std::to_string(!non_uniform_cl) + "_fc" + std::format("{:.2f}", fc) + "_lam" + std::format("{:.2f}", lambda) + "_bin" + std::format("{:.2f}", bin) + "_mju" + std::format("{:.2f}", mju);
+	std::string file_name_part = "_" + fnorm_text + "_l" + std::to_string(l) + "_unif" + std::to_string(!non_uniform_cl) + "_fc" + std::format("{:.2f}", fc) + "_lam" + std::format("{:.2f}", lambda) + "_bin" + std::format("{:.2f}", bin) + "_mju" + std::format("{:.2f}", mju) + "_knn" + std::to_string(knn);
 
 	//Process point tiles one by one
 	unsigned int i = 0, n_subsets = file_name_point_tiles.size();

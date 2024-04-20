@@ -39,7 +39,7 @@ struct Point3D
 
 	bool operator == (const Point3D& p) const
 	{
-		return this->x == p.x && this->y == p.y && this->z == p.z;
+		return (this->x == p.x) && (this->y == p.y) && (this->z == p.z);
 	}
 };
 

@@ -72,7 +72,7 @@ void KNNSearch::findAllKNN(const TVector <Point3D>&qpoints, const TVector<int>&K
 
 		//Perform knn search
 		double query_pt[3] = { qpoints[i].x, qpoints[i].y, qpoints[i].z };
-		index.findNeighbors(resultSet, &query_pt[0], nanoflann::SearchParams(10));
+		index.findNeighbors(resultSet, &query_pt[0]);
 
 		//Add to the list
 		knn_id.push_back(ret_indices);

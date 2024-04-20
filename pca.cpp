@@ -24,6 +24,8 @@
 std::tuple<Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd> PCA::pca(const Eigen::MatrixXd& A)
 {
 	//Compute PCA using SVD
+
+	//Compute means of coordinates
 	Eigen::RowVector3d M = A.colwise().mean();
 
 	//Subtract mean: B = A - M
