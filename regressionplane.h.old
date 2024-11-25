@@ -1,4 +1,4 @@
-// Description: Read / write the input / output point cloud
+// Description: Compute the regression plane using SVD
 
 // Copyright (c) 2021 - 2023
 // Tomas Bayer
@@ -19,22 +19,26 @@
 // along with this library. If not, see <http://www.gnu.org/licenses/>.
 
 
-#ifndef IO_H
-#define IO_H
+#ifndef RegressionPlane_H
+#define RegressionPlane_H
 
-#include <string>
-#include "point3d.h"
 #include "tvector.h"
+#include "point3d.h"
 
-//Input - output functions
-class IO
+//Parameters of the regression plane given by P
+struct RegressionPlane
 {
-	public:
-		static void loadPointCloud(const std::string& file_name, TVector <Point3D>& U, const double fc = 1.0, const double mul = 1.0); 
-		static void savePointCloud(const std::string& file_name, const TVector <Point3D>& U);
-		static void saveClientsToFacilites(const std::string& file_name, const TVector <int>& CL);
-		static void savePointCloudAndStatistics(const std::string& file_name, const TVector <Point3D>& U, const TVector <int>& NC, const TVector <double>& RAD, const TVector <double>& ABN, const TVector <double>& DFP, const TVector <double>& ASP, const TVector <int>& DIM, const TVector <int>& OVER, const TVector <double>& SLO);
+	double  a,	//Parametric eaquation
+		b,	//Parametric eaquation
+		c,	//Parametric eaquation
+		d,	//Parametric eaquation
+		sigma,	//Cummulated distance of points from the plane: S[min]
+		abn,    //Maximum ABN, point and its neighbors
+		var;	//Variability of normals S[min] / (S[min] + S[mid] + S[max])
 
+	RegressionPlane() : a(1.0), b(0.0), c(0.0), d(0.0), sigma(0.0), abn(0.0), var(0.0) {}
+
+	void computeRegressionPlane(const TVector <Point3D>& P);
 };
 
 #endif

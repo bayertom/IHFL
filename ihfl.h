@@ -43,6 +43,7 @@ class IHFL
 {
 	private:
 		bool non_uniform_cl;		//Non-uniform clusterization (recompute cost of points according to normal vectors)
+		bool recompute_cost;		//Recompute cost of clusters according to normal vectos
 		int k;				//Amount of nearest neighbors, estimation of normal vectors
 		double  lambda,			//Radius of the ball
 			bin,			//Size of the bin of the grid (performance of the spatial indexing)
@@ -56,8 +57,8 @@ class IHFL
 
 
 	public:
-		 IHFL(const bool non_uniform_cl_, const int k_, const double lambda_, const double bin_, const double mju_, const double l_, const double x_scale_, 
-			const double y_scale_, const double z_scale_, const pfnorm &fnorm_) : non_uniform_cl(non_uniform_cl_), k(k_), lambda(lambda_), bin(bin_), 
+		 IHFL(const bool non_uniform_cl_, const bool recompute_cost_, const int k_, const double lambda_, const double bin_, const double mju_, const double l_, const double x_scale_, 
+			const double y_scale_, const double z_scale_, const pfnorm &fnorm_) : non_uniform_cl(non_uniform_cl_), recompute_cost(recompute_cost_), k(k_), lambda(lambda_), bin(bin_), 
 			 mju(mju_), l(l_), x_scale(x_scale_), y_scale(y_scale_), z_scale(z_scale_), fnorm(fnorm_) {}
 		
 		 void generateClusters(const double w, const double h, const double rad, const int nc, const int n, TVector <Point3D>& U);

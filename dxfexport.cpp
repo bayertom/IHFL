@@ -121,7 +121,7 @@ void DXFExport::exportClustersToDXF(const std::string& file_name, const TVector 
 				zmin = std::min(zmin, points[u_idx2].z);
 				zmax = std::max(zmax, points[u_idx2].z);
 			}
-
+			
 			//Create min-max box
 			if (f.U_idxs.size() > 0)
 			{
@@ -165,6 +165,7 @@ void DXFExport::exportClustersToDXF(const std::string& file_name, const TVector 
 				createLine(file, level_mmbs, xmin, ymax, zmin, xmin, ymax, zmax, color_mmbs);
 
 			}
+			
 		}
 
 		//End header section

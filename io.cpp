@@ -27,7 +27,7 @@
 
 #include "tvector.h"
 
-void IO::loadPointCloud(const std::string& file_name, TVector <Point3D>& U, const double fc)
+void IO::loadPointCloud(const std::string& file_name, TVector <Point3D>& U, const double fc, const double mul)
 {
 	//Load pointcloud from the file
 	int index = 0;
@@ -55,15 +55,15 @@ void IO::loadPointCloud(const std::string& file_name, TVector <Point3D>& U, cons
 
 			//Add point P = [x, y, z] to the list
 			if (row.size() == 3)
-				U.push_back(Point3D(index, std::stod(row[0]), std::stod(row[1]), std::stod(row[2]), fc));
+				U.push_back(Point3D(index, std::stod(row[0]), std::stod(row[1]), std::stod(row[2]), fc * mul));
 
 			//Add point P = [x, y, z, fc] to the list
 			else if (row.size() == 4)
-				U.push_back(Point3D(index, std::stod(row[0]), std::stod(row[1]), std::stod(row[2]), std::stod(row[3])));
+				U.push_back(Point3D(index, std::stod(row[0]), std::stod(row[1]), std::stod(row[2]), std::stod(row[3]) * mul));
 
-			//Add point P = [x, y, z, fc, r, g, b] to the list
+			//Add point P = [x, y, z, r, g, b] to the list
 			else if (row.size() == 6)
-				U.push_back(Point3D(index, std::stod(row[0]), std::stod(row[1]), std::stod(row[2]), fc, std::stod(row[3]), std::stoi(row[4]), std::stoi(row[5])));
+				U.push_back(Point3D(index, std::stod(row[0]), std::stod(row[1]), std::stod(row[2]), fc * mul, std::stod(row[3]) * fc, std::stoi(row[4]), std::stoi(row[5])));
 
 			//Add point P = [x, y, z, fc, r, g, b] to the list
 			else if (row.size() == 7)
@@ -74,6 +74,7 @@ void IO::loadPointCloud(const std::string& file_name, TVector <Point3D>& U, cons
 			else if (row.size() > 7)
 				U.push_back(Point3D(index, std::stod(row[0]), std::stod(row[1]), std::stod(row[2]), fc, std::stoi(row[3]), std::stoi(row[4]), std::stoi(row[5])));
 
+			//Increment index
 			index++;
 		}
 	}

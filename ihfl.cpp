@@ -32,6 +32,7 @@
 #include "regressionplane.h"
 #include "pca.h"
 #include "isfacilitysefordeletion.h"
+#include "sortpoints3dbyz.h"
 
 #include "Eigen/Dense"                               
 #include "Eigen/Sparse"                              
@@ -705,23 +706,25 @@ void IHFL::recomputeFacilityCosts(const double fc, double rat, const TVector <Re
 {
 	//Recompute facility cost according to the normals for non-uniform clustering
 	const double eps = 0.0001;
-
+	
+	//Change costs 
 	for (int i = 0; i < U.size(); i++)
 	{
 		//Pseudometrics
 		if (fnorm == &IHFL::nDIS || fnorm == &IHFL::nABN || fnorm == &IHFL::nABLP || fnorm == &IHFL::nLIN || fnorm == &IHFL::nPLA ||
-		    fnorm == &IHFL::nSPH || fnorm == &IHFL::nOMN || fnorm == &IHFL::nANI || fnorm == &IHFL::nCUR || fnorm == &IHFL::nVER)
+				fnorm == &IHFL::nSPH || fnorm == &IHFL::nOMN || fnorm == &IHFL::nANI || fnorm == &IHFL::nCUR || fnorm == &IHFL::nVER)
 		{
 			//Compute new facility cost
 			U[i].fc = std::max(std::min((fc / (RP[i].height + eps)) * fc, rat * fc), fc / rat);
 		}
-		
+
 		//DFP + L1 + L2 + ...
 		else if (fnorm == &IHFL::nDFP || fnorm == &IHFL::nL2 || fnorm == &IHFL::nL1 || fnorm == &IHFL::nL22 || fnorm == &IHFL::nEll)
 		{
 			U[i].fc = std::max(std::min((fc / (RP[i].height + eps)) * fc, rat * fc), fc / rat);
 		}
 	}
+	
 }
 
 
@@ -783,9 +786,11 @@ void IHFL::clusterizeIHFL(TVector <Point3D>&U, const double fc, const GridIndexi
 	//Recompute facility costs according to normals (replace old values)]
 	const double multiplier = 10.0;
 	std::cout << non_uniform_cl;
-	if (non_uniform_cl)
-		recomputeFacilityCosts(fc, multiplier, RP, fnorm, U);
 
+	if (non_uniform_cl && recompute_cost)
+	{
+		recomputeFacilityCosts(fc, multiplier, RP, fnorm, U);
+	}
 	//Process all points
 	std::cout << ">> Clusterization: ";
 
@@ -803,7 +808,9 @@ void IHFL::clusterizeIHFL(TVector <Point3D>&U, const double fc, const GridIndexi
 	{
 		//Print status
 		if (i % (25000) == 0)
+		{
 			std::cout << i << " ";
+		}
 
 		//Update clusters using the IHFL method, heuristic approach
 		updateClusters(i, U, RP, gi, FG);
@@ -845,9 +852,6 @@ void IHFL::updateClusters(const int i, const TVector <Point3D>& points, const TV
 
 			//Reset sign and shift
 			const int p_idx2 = abs(fac.p_idx) - 1;
-
-			//if (i == 6840)
-			//	std::cout << p_idx2 << ' ';
 
 			//Norm and pseudonorm
 			const double dist_pf = distL2(points[i].x, points[i].y, points[i].z, points[p_idx2].x, points[p_idx2].y, points[p_idx2].z);       //Distance between point p[i] and facility
