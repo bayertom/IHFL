@@ -1,0 +1,1 @@
+IHFL "tree_18.txt" +norm=dfp +fc=0.05 +lambda=0.50 +bin=0.5 +mju=0.99 +l=1 +knn=50 +ns=100000 -n -e -s

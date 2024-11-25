@@ -1,0 +1,11 @@
+﻿  main.cpp
+E:\Tomas\CPP\IHFL\main.cpp(23,1): warning C4005: '_CRT_SECURE_NO_WARNINGS': macro redefinition
+E:\Tomas\CPP\IHFL\main.cpp(23,1): message : '_CRT_SECURE_NO_WARNINGS' previously declared on the command line
+E:\Tomas\CPP\IHFL\main.cpp(327,17): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
+          with
+          [
+              _Ty=double
+          ]
+E:\Tomas\CPP\IHFL\main.cpp(393,32): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
+E:\Tomas\CPP\IHFL\main.cpp(431,135): warning C4244: 'argument': conversion from 'double' to 'const int', possible loss of data
+  IHFL.vcxproj -> E:\Tomas\CPP\IHFL\x64\Debug\IHFL.exe

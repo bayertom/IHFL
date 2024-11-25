@@ -1,0 +1,1 @@
+IHFL "canopy.txt" +norm=abn +fc=0.01 +lambda=0.25 +bin=0.25 +mju=0.95 +l=1 +knn=50 +ns=100000 -n -e -s

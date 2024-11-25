@@ -1,0 +1,1 @@
+IHFL "cone_10000.txt" +norm=cur +fc=0.01 +lambda=0.25 +bin=0.25 +mju=0.99 +l=1 +knn=50 +ns=100000 -n -e -s
