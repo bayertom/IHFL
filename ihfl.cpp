@@ -1,6 +1,6 @@
 ﻿// Description: Incremental heuristic facility location clustering
 
-// Copyright (c) 2021 - 2023
+// Copyright (c) 2021 - 2025
 // Tomas Bayer
 // Charles University in Prague, Faculty of Science
 // bayertom@natur.cuni.cz
