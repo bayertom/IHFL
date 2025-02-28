@@ -1,7 +1,7 @@
 // Description: Incremental heuristic facility location clustering
 // Uniform and non-uniform version
 
-// Copyright (c) 2021 - 2023
+// Copyright (c) 2021 - 2025
 // Tomas Bayer
 // Charles University in Prague, Faculty of Science
 // bayertom@natur.cuni.cz
@@ -75,6 +75,7 @@ class IHFL
 		 double nL1(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
 		 double nL22(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
 		 double nEll(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double nGeo(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
 		 double nDIS(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
 		 double nABN(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
 		 double nABLP(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);

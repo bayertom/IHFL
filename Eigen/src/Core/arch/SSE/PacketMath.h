@@ -145,6 +145,27 @@ EIGEN_STRONG_INLINE Packet2d vec2d_unpackhi(const Packet2d& a, const Packet2d& b
 
 #define EIGEN_DECLARE_CONST_Packet4ui(NAME, X) const Packet4ui p4ui_##NAME = pset1<Packet4ui>(X)
 
+// Work around lack of extract/cvt for epi64 when compiling for 32-bit.
+#if EIGEN_ARCH_x86_64
+EIGEN_ALWAYS_INLINE int64_t _mm_extract_epi64_0(const __m128i& a) { return _mm_cvtsi128_si64(a); }
+#ifdef EIGEN_VECTORIZE_SSE4_1
+EIGEN_ALWAYS_INLINE int64_t _mm_extract_epi64_1(const __m128i& a) { return _mm_extract_epi64(a, 1); }
+#else
+EIGEN_ALWAYS_INLINE int64_t _mm_extract_epi64_1(const __m128i& a) {
+  return _mm_cvtsi128_si64(_mm_castpd_si128(_mm_shuffle_pd(_mm_castsi128_pd(a), _mm_castsi128_pd(a), 0x1)));
+}
+#endif
+#else
+// epi64 instructions are not available.  The following seems to generate the same instructions
+// with -O2 in GCC/Clang.
+EIGEN_ALWAYS_INLINE int64_t _mm_extract_epi64_0(const __m128i& a) {
+  return numext::bit_cast<int64_t>(_mm_cvtsd_f64(_mm_castsi128_pd(a)));
+}
+EIGEN_ALWAYS_INLINE int64_t _mm_extract_epi64_1(const __m128i& a) {
+  return numext::bit_cast<int64_t>(_mm_cvtsd_f64(_mm_shuffle_pd(_mm_castsi128_pd(a), _mm_castsi128_pd(a), 0x1)));
+}
+#endif
+
 // Use the packet_traits defined in AVX/PacketMath.h instead if we're going
 // to leverage AVX instructions.
 #ifndef EIGEN_VECTORIZE_AVX
@@ -176,13 +197,8 @@ struct packet_traits<float> : default_packet_traits {
     HasRsqrt = 1,
     HasTanh = EIGEN_FAST_MATH,
     HasErf = EIGEN_FAST_MATH,
+    HasErfc = EIGEN_FAST_MATH,
     HasBlend = 1,
-    HasCeil = 1,
-    HasFloor = 1,
-#ifdef EIGEN_VECTORIZE_SSE4_1
-    HasRound = 1,
-#endif
-    HasRint = 1,
     HasSign = 0  // The manually vectorized version is slightly slower for SSE.
   };
 };
@@ -197,18 +213,18 @@ struct packet_traits<double> : default_packet_traits {
 
     HasCmp = 1,
     HasDiv = 1,
+    HasSin = EIGEN_FAST_MATH,
+    HasCos = EIGEN_FAST_MATH,
+    HasTanh = EIGEN_FAST_MATH,
     HasLog = 1,
+    HasErf = EIGEN_FAST_MATH,
+    HasErfc = EIGEN_FAST_MATH,
     HasExp = 1,
     HasSqrt = 1,
     HasRsqrt = 1,
     HasATan = 1,
-    HasBlend = 1,
-    HasFloor = 1,
-    HasCeil = 1,
-#ifdef EIGEN_VECTORIZE_SSE4_1
-    HasRound = 1,
-#endif
-    HasRint = 1
+    HasATanh = 1,
+    HasBlend = 1
   };
 };
 template <>
@@ -275,6 +291,7 @@ struct packet_traits<bool> : default_packet_traits {
     HasMax = 0,
     HasConj = 0,
     HasSqrt = 1,
+    HasNegate = 0,
     HasSign = 0  // Don't try to vectorize psign<bool> = identity.
   };
 };
@@ -578,11 +595,6 @@ EIGEN_STRONG_INLINE Packet2l pnegate(const Packet2l& a) {
 template <>
 EIGEN_STRONG_INLINE Packet4i pnegate(const Packet4i& a) {
   return psub(pzero(a), a);
-}
-
-template <>
-EIGEN_STRONG_INLINE Packet16b pnegate(const Packet16b& a) {
-  return a;
 }
 
 template <>
@@ -1120,7 +1132,7 @@ EIGEN_STRONG_INLINE Packet pminmax_propagate_nan(const Packet& a, const Packet& 
   return pselect<Packet>(not_nan_mask_a, m, a);
 }
 
-// Add specializations for min/max with prescribed NaN progation.
+// Add specializations for min/max with prescribed NaN propagation.
 template <>
 EIGEN_STRONG_INLINE Packet4f pmin<PropagateNumbers, Packet4f>(const Packet4f& a, const Packet4f& b) {
   return pminmax_propagate_numbers(a, b, pmin<Packet4f>);
@@ -1221,13 +1233,13 @@ EIGEN_STRONG_INLINE Packet4ui plogical_shift_left(const Packet4ui& a) {
 
 template <>
 EIGEN_STRONG_INLINE Packet4f pabs(const Packet4f& a) {
-  const Packet4f mask = _mm_castsi128_ps(_mm_setr_epi32(0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF));
-  return _mm_and_ps(a, mask);
+  const __m128i mask = _mm_setr_epi32(0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF, 0x7FFFFFFF);
+  return _mm_castsi128_ps(_mm_and_si128(mask, _mm_castps_si128(a)));
 }
 template <>
 EIGEN_STRONG_INLINE Packet2d pabs(const Packet2d& a) {
-  const Packet2d mask = _mm_castsi128_pd(_mm_setr_epi32(0xFFFFFFFF, 0x7FFFFFFF, 0xFFFFFFFF, 0x7FFFFFFF));
-  return _mm_and_pd(a, mask);
+  const __m128i mask = _mm_setr_epi32(0xFFFFFFFF, 0x7FFFFFFF, 0xFFFFFFFF, 0x7FFFFFFF);
+  return _mm_castsi128_pd(_mm_and_si128(mask, _mm_castpd_si128(a)));
 }
 template <>
 EIGEN_STRONG_INLINE Packet2l pabs(const Packet2l& a) {
@@ -1290,73 +1302,14 @@ template <>
 EIGEN_STRONG_INLINE Packet2d pfloor<Packet2d>(const Packet2d& a) {
   return _mm_floor_pd(a);
 }
-#else
-template <>
-EIGEN_STRONG_INLINE Packet4f print(const Packet4f& a) {
-  // Adds and subtracts signum(a) * 2^23 to force rounding.
-  const Packet4f limit = pset1<Packet4f>(static_cast<float>(1 << 23));
-  const Packet4f abs_a = pabs(a);
-  Packet4f r = padd(abs_a, limit);
-  // Don't compile-away addition and subtraction.
-  EIGEN_OPTIMIZATION_BARRIER(r);
-  r = psub(r, limit);
-  // If greater than limit, simply return a.  Otherwise, account for sign.
-  r = pselect(pcmp_lt(abs_a, limit), pselect(pcmp_lt(a, pzero(a)), pnegate(r), r), a);
-  return r;
-}
 
 template <>
-EIGEN_STRONG_INLINE Packet2d print(const Packet2d& a) {
-  // Adds and subtracts signum(a) * 2^52 to force rounding.
-  const Packet2d limit = pset1<Packet2d>(static_cast<double>(1ull << 52));
-  const Packet2d abs_a = pabs(a);
-  Packet2d r = padd(abs_a, limit);
-  // Don't compile-away addition and subtraction.
-  EIGEN_OPTIMIZATION_BARRIER(r);
-  r = psub(r, limit);
-  // If greater than limit, simply return a.  Otherwise, account for sign.
-  r = pselect(pcmp_lt(abs_a, limit), pselect(pcmp_lt(a, pzero(a)), pnegate(r), r), a);
-  return r;
+EIGEN_STRONG_INLINE Packet4f ptrunc<Packet4f>(const Packet4f& a) {
+  return _mm_round_ps(a, _MM_FROUND_TRUNC);
 }
-
 template <>
-EIGEN_STRONG_INLINE Packet4f pfloor<Packet4f>(const Packet4f& a) {
-  const Packet4f cst_1 = pset1<Packet4f>(1.0f);
-  Packet4f tmp = print<Packet4f>(a);
-  // If greater, subtract one.
-  Packet4f mask = _mm_cmpgt_ps(tmp, a);
-  mask = pand(mask, cst_1);
-  return psub(tmp, mask);
-}
-
-template <>
-EIGEN_STRONG_INLINE Packet2d pfloor<Packet2d>(const Packet2d& a) {
-  const Packet2d cst_1 = pset1<Packet2d>(1.0);
-  Packet2d tmp = print<Packet2d>(a);
-  // If greater, subtract one.
-  Packet2d mask = _mm_cmpgt_pd(tmp, a);
-  mask = pand(mask, cst_1);
-  return psub(tmp, mask);
-}
-
-template <>
-EIGEN_STRONG_INLINE Packet4f pceil<Packet4f>(const Packet4f& a) {
-  const Packet4f cst_1 = pset1<Packet4f>(1.0f);
-  Packet4f tmp = print<Packet4f>(a);
-  // If smaller, add one.
-  Packet4f mask = _mm_cmplt_ps(tmp, a);
-  mask = pand(mask, cst_1);
-  return padd(tmp, mask);
-}
-
-template <>
-EIGEN_STRONG_INLINE Packet2d pceil<Packet2d>(const Packet2d& a) {
-  const Packet2d cst_1 = pset1<Packet2d>(1.0);
-  Packet2d tmp = print<Packet2d>(a);
-  // If smaller, add one.
-  Packet2d mask = _mm_cmplt_pd(tmp, a);
-  mask = pand(mask, cst_1);
-  return padd(tmp, mask);
+EIGEN_STRONG_INLINE Packet2d ptrunc<Packet2d>(const Packet2d& a) {
+  return _mm_round_pd(a, _MM_FROUND_TRUNC);
 }
 #endif
 
@@ -1610,11 +1563,7 @@ EIGEN_STRONG_INLINE double pfirst<Packet2d>(const Packet2d& a) {
 }
 template <>
 EIGEN_STRONG_INLINE int64_t pfirst<Packet2l>(const Packet2l& a) {
-#if EIGEN_ARCH_x86_64
-  int64_t x = _mm_cvtsi128_si64(a);
-#else
-  int64_t x = numext::bit_cast<int64_t>(_mm_cvtsd_f64(_mm_castsi128_pd(a)));
-#endif
+  int64_t x = _mm_extract_epi64_0(a);
   return x;
 }
 template <>
@@ -1641,11 +1590,7 @@ EIGEN_STRONG_INLINE double pfirst<Packet2d>(const Packet2d& a) {
 }
 template <>
 EIGEN_STRONG_INLINE int64_t pfirst<Packet2l>(const Packet2l& a) {
-#if EIGEN_ARCH_x86_64
-  int64_t x = _mm_cvtsi128_si64(a);
-#else
-  int64_t x = numext::bit_cast<int64_t>(_mm_cvtsd_f64(_mm_castsi128_pd(a)));
-#endif
+  int64_t x = _mm_extract_epi64_0(a);
   return x;
 }
 template <>
@@ -1669,11 +1614,7 @@ EIGEN_STRONG_INLINE double pfirst<Packet2d>(const Packet2d& a) {
 }
 template <>
 EIGEN_STRONG_INLINE int64_t pfirst<Packet2l>(const Packet2l& a) {
-#if EIGEN_ARCH_x86_64
-  return _mm_cvtsi128_si64(a);
-#else
-  return numext::bit_cast<int64_t>(_mm_cvtsd_f64(_mm_castsi128_pd(a)));
-#endif
+  return _mm_extract_epi64_0(a);
 }
 template <>
 EIGEN_STRONG_INLINE int pfirst<Packet4i>(const Packet4i& a) {
@@ -1826,7 +1767,6 @@ EIGEN_STRONG_INLINE Packet4f pldexp<Packet4f>(const Packet4f& a, const Packet4f&
 
 // We specialize pldexp here, since the generic implementation uses Packet2l, which is not well
 // supported by SSE, and has more range than is needed for exponents.
-// TODO(rmlarsen): Remove this specialization once Packet2l has support or casting.
 template <>
 EIGEN_STRONG_INLINE Packet2d pldexp<Packet2d>(const Packet2d& a, const Packet2d& exponent) {
   // Clamp exponent to [-2099, 2099]
@@ -1845,6 +1785,24 @@ EIGEN_STRONG_INLINE Packet2d pldexp<Packet2d>(const Packet2d& a, const Packet2d&
   c = _mm_castsi128_pd(_mm_slli_epi64(padd(b, bias), 52));           // 2^(e - 3b)
   out = pmul(out, c);                                                // a * 2^e
   return out;
+}
+
+// We specialize pldexp here, since the generic implementation uses Packet2l, which is not well
+// supported by SSE, and has more range than is needed for exponents.
+template <>
+EIGEN_STRONG_INLINE Packet2d pldexp_fast<Packet2d>(const Packet2d& a, const Packet2d& exponent) {
+  // Clamp exponent to [-1023, 1024]
+  const Packet2d min_exponent = pset1<Packet2d>(-1023.0);
+  const Packet2d max_exponent = pset1<Packet2d>(1024.0);
+  const Packet2d e = pmin(pmax(exponent, min_exponent), max_exponent);
+
+  // Convert e to integer and swizzle to low-order bits.
+  const Packet4i ei = vec4i_swizzle1(_mm_cvtpd_epi32(e), 0, 3, 1, 3);
+
+  // Compute 2^e multiply:
+  const Packet4i bias = _mm_set_epi32(0, 1023, 0, 1023);
+  const Packet2d c = _mm_castsi128_pd(_mm_slli_epi64(padd(ei, bias), 52));  // 2^e
+  return pmul(a, c);
 }
 
 // with AVX, the default implementations based on pload1 are faster
@@ -2225,29 +2183,25 @@ EIGEN_STRONG_INLINE void ptranspose(PacketBlock<Packet16b, 16>& kernel) {
   kernel.packet[15] = _mm_unpackhi_epi64(u7, uf);
 }
 
+EIGEN_STRONG_INLINE __m128i sse_blend_mask(const Selector<2>& ifPacket) {
+  return _mm_set_epi64x(0 - ifPacket.select[1], 0 - ifPacket.select[0]);
+}
+
+EIGEN_STRONG_INLINE __m128i sse_blend_mask(const Selector<4>& ifPacket) {
+  return _mm_set_epi32(0 - ifPacket.select[3], 0 - ifPacket.select[2], 0 - ifPacket.select[1], 0 - ifPacket.select[0]);
+}
+
 template <>
 EIGEN_STRONG_INLINE Packet2l pblend(const Selector<2>& ifPacket, const Packet2l& thenPacket,
                                     const Packet2l& elsePacket) {
-  const __m128i zero = _mm_setzero_si128();
-  const __m128i select = _mm_set_epi64x(ifPacket.select[1], ifPacket.select[0]);
-  __m128i false_mask = pcmp_eq<Packet2l>(select, zero);
-#ifdef EIGEN_VECTORIZE_SSE4_1
-  return _mm_blendv_epi8(thenPacket, elsePacket, false_mask);
-#else
-  return _mm_or_si128(_mm_andnot_si128(false_mask, thenPacket), _mm_and_si128(false_mask, elsePacket));
-#endif
+  const __m128i true_mask = sse_blend_mask(ifPacket);
+  return pselect<Packet2l>(true_mask, thenPacket, elsePacket);
 }
 template <>
 EIGEN_STRONG_INLINE Packet4i pblend(const Selector<4>& ifPacket, const Packet4i& thenPacket,
                                     const Packet4i& elsePacket) {
-  const __m128i zero = _mm_setzero_si128();
-  const __m128i select = _mm_set_epi32(ifPacket.select[3], ifPacket.select[2], ifPacket.select[1], ifPacket.select[0]);
-  __m128i false_mask = _mm_cmpeq_epi32(select, zero);
-#ifdef EIGEN_VECTORIZE_SSE4_1
-  return _mm_blendv_epi8(thenPacket, elsePacket, false_mask);
-#else
-  return _mm_or_si128(_mm_andnot_si128(false_mask, thenPacket), _mm_and_si128(false_mask, elsePacket));
-#endif
+  const __m128i true_mask = sse_blend_mask(ifPacket);
+  return pselect<Packet4i>(true_mask, thenPacket, elsePacket);
 }
 template <>
 EIGEN_STRONG_INLINE Packet4ui pblend(const Selector<4>& ifPacket, const Packet4ui& thenPacket,
@@ -2257,26 +2211,14 @@ EIGEN_STRONG_INLINE Packet4ui pblend(const Selector<4>& ifPacket, const Packet4u
 template <>
 EIGEN_STRONG_INLINE Packet4f pblend(const Selector<4>& ifPacket, const Packet4f& thenPacket,
                                     const Packet4f& elsePacket) {
-  const __m128 zero = _mm_setzero_ps();
-  const __m128 select = _mm_set_ps(ifPacket.select[3], ifPacket.select[2], ifPacket.select[1], ifPacket.select[0]);
-  __m128 false_mask = _mm_cmpeq_ps(select, zero);
-#ifdef EIGEN_VECTORIZE_SSE4_1
-  return _mm_blendv_ps(thenPacket, elsePacket, false_mask);
-#else
-  return _mm_or_ps(_mm_andnot_ps(false_mask, thenPacket), _mm_and_ps(false_mask, elsePacket));
-#endif
+  const __m128i true_mask = sse_blend_mask(ifPacket);
+  return pselect<Packet4f>(_mm_castsi128_ps(true_mask), thenPacket, elsePacket);
 }
 template <>
 EIGEN_STRONG_INLINE Packet2d pblend(const Selector<2>& ifPacket, const Packet2d& thenPacket,
                                     const Packet2d& elsePacket) {
-  const __m128d zero = _mm_setzero_pd();
-  const __m128d select = _mm_set_pd(ifPacket.select[1], ifPacket.select[0]);
-  __m128d false_mask = _mm_cmpeq_pd(select, zero);
-#ifdef EIGEN_VECTORIZE_SSE4_1
-  return _mm_blendv_pd(thenPacket, elsePacket, false_mask);
-#else
-  return _mm_or_pd(_mm_andnot_pd(false_mask, thenPacket), _mm_and_pd(false_mask, elsePacket));
-#endif
+  const __m128i true_mask = sse_blend_mask(ifPacket);
+  return pselect<Packet2d>(_mm_castsi128_pd(true_mask), thenPacket, elsePacket);
 }
 
 // Scalar path for pmadd with FMA to ensure consistency with vectorized path.
@@ -2357,8 +2299,6 @@ EIGEN_STRONG_INLINE __m128i half2floatsse(__m128i h) {
 }
 
 EIGEN_STRONG_INLINE __m128i float2half(__m128 f) {
-  __m128i o = _mm_setzero_si128();
-
   // unsigned int sign_mask = 0x80000000u;
   __m128i sign = _mm_set1_epi32(0x80000000u);
   // unsigned int sign = f.u & sign_mask;
@@ -2385,7 +2325,7 @@ EIGEN_STRONG_INLINE __m128i float2half(__m128 f) {
   //  f.f += denorm_magic.f;
   f = _mm_add_ps(f, _mm_castsi128_ps(denorm_magic));
   // f.u - denorm_magic.u
-  o = _mm_sub_epi32(_mm_castps_si128(f), denorm_magic);
+  __m128i o = _mm_sub_epi32(_mm_castps_si128(f), denorm_magic);
   o = _mm_and_si128(o, subnorm_mask);
   // Correct result for inf/nan/zero/subnormal, 0 otherwise
   o = _mm_or_si128(o, naninf_value);

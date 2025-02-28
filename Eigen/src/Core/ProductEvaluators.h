@@ -235,19 +235,20 @@ EIGEN_CATCH_ASSIGN_XPR_OP_PRODUCT(sub_assign_op, scalar_difference_op, add_assig
 
 template <typename Lhs, typename Rhs>
 struct generic_product_impl<Lhs, Rhs, DenseShape, DenseShape, InnerProduct> {
+  using impl = default_inner_product_impl<Lhs, Rhs, false>;
   template <typename Dst>
   static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE void evalTo(Dst& dst, const Lhs& lhs, const Rhs& rhs) {
-    dst.coeffRef(0, 0) = (lhs.transpose().cwiseProduct(rhs)).sum();
+    dst.coeffRef(0, 0) = impl::run(lhs, rhs);
   }
 
   template <typename Dst>
   static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE void addTo(Dst& dst, const Lhs& lhs, const Rhs& rhs) {
-    dst.coeffRef(0, 0) += (lhs.transpose().cwiseProduct(rhs)).sum();
+    dst.coeffRef(0, 0) += impl::run(lhs, rhs);
   }
 
   template <typename Dst>
   static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE void subTo(Dst& dst, const Lhs& lhs, const Rhs& rhs) {
-    dst.coeffRef(0, 0) -= (lhs.transpose().cwiseProduct(rhs)).sum();
+    dst.coeffRef(0, 0) -= impl::run(lhs, rhs);
   }
 };
 
@@ -293,6 +294,7 @@ struct generic_product_impl<Lhs, Rhs, DenseShape, DenseShape, OuterProduct> {
     }
   };
   struct add {
+    /** Add to dst. */
     template <typename Dst, typename Src>
     EIGEN_DEVICE_FUNC void operator()(const Dst& dst, const Src& src) const {
       dst.const_cast_derived() += src;
@@ -304,9 +306,12 @@ struct generic_product_impl<Lhs, Rhs, DenseShape, DenseShape, OuterProduct> {
       dst.const_cast_derived() -= src;
     }
   };
+  /** Scaled add. */
   struct adds {
     Scalar m_scale;
+    /** Constructor */
     explicit adds(const Scalar& s) : m_scale(s) {}
+    /** Scaled add to dst. */
     template <typename Dst, typename Src>
     void EIGEN_DEVICE_FUNC operator()(const Dst& dst, const Src& src) const {
       dst.const_cast_derived() += m_scale * src;
@@ -810,7 +815,7 @@ struct diagonal_product_evaluator_base : evaluator_base<Derived> {
                     : (Derived::MaxColsAtCompileTime == 1 && Derived::MaxRowsAtCompileTime != 1) ? ColMajor
                     : MatrixFlags & RowMajorBit                                                  ? RowMajor
                                                                                                  : ColMajor,
-    SameStorageOrder_ = StorageOrder_ == (MatrixFlags & RowMajorBit ? RowMajor : ColMajor),
+    SameStorageOrder_ = int(StorageOrder_) == ((MatrixFlags & RowMajorBit) ? RowMajor : ColMajor),
 
     ScalarAccessOnDiag_ = !((int(StorageOrder_) == ColMajor && int(ProductOrder) == OnTheLeft) ||
                             (int(StorageOrder_) == RowMajor && int(ProductOrder) == OnTheRight)),

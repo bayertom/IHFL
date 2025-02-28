@@ -196,6 +196,13 @@
 #define EIGEN_COMP_PGI 0
 #endif
 
+/// \internal EIGEN_COMP_NVHPC set to NVHPC version if the compiler is nvc++
+#if defined(__NVCOMPILER)
+#define EIGEN_COMP_NVHPC (__NVCOMPILER_MAJOR__ * 100 + __NVCOMPILER_MINOR__)
+#else
+#define EIGEN_COMP_NVHPC 0
+#endif
+
 /// \internal EIGEN_COMP_ARM set to 1 if the compiler is ARM Compiler
 #if defined(__CC_ARM) || defined(__ARMCC_VERSION)
 #define EIGEN_COMP_ARM 1
@@ -212,7 +219,7 @@
 
 /// \internal EIGEN_COMP_FCC set to FCC version if the compiler is Fujitsu Compiler (traditional mode)
 /// \note The Fujitsu C/C++ compiler uses the traditional mode based
-/// on EDG g++ 6.1 by default or if envoked with the -Nnoclang flag
+/// on EDG g++ 6.1 by default or if invoked with the -Nnoclang flag
 #if defined(__FUJITSU)
 #define EIGEN_COMP_FCC (__FCC_major__ * 100 + __FCC_minor__ * 10 + __FCC_patchlevel__)
 #else
@@ -221,7 +228,7 @@
 
 /// \internal EIGEN_COMP_CLANGFCC set to FCC version if the compiler is Fujitsu Compiler (Clang mode)
 /// \note The Fujitsu C/C++ compiler uses the non-traditional mode
-/// based on Clang 7.1.0 if envoked with the -Nclang flag
+/// based on Clang 7.1.0 if invoked with the -Nclang flag
 #if defined(__CLANG_FUJITSU)
 #define EIGEN_COMP_CLANGFCC (__FCC_major__ * 100 + __FCC_minor__ * 10 + __FCC_patchlevel__)
 #else
@@ -369,6 +376,13 @@
 #define EIGEN_ARCH_MIPS 0
 #endif
 
+/// \internal EIGEN_ARCH_LOONGARCH64 set to 1 if the architecture is LOONGARCH64
+#if defined(__loongarch64)
+#define EIGEN_ARCH_LOONGARCH64 1
+#else
+#define EIGEN_ARCH_LOONGARCH64 0
+#endif
+
 /// \internal EIGEN_ARCH_SPARC set to 1 if the architecture is SPARC
 #if defined(__sparc__) || defined(__sparc)
 #define EIGEN_ARCH_SPARC 1
@@ -412,6 +426,16 @@
 // note: ANDROID is defined when using ndk_build, __ANDROID__ is defined when using a standalone toolchain.
 #if defined(__ANDROID__) || defined(ANDROID)
 #define EIGEN_OS_ANDROID 1
+
+// Since NDK r16, `__NDK_MAJOR__` and `__NDK_MINOR__` are defined in
+// <android/ndk-version.h>. For NDK < r16, users should define these macros,
+// e.g. `-D__NDK_MAJOR__=11 -D__NKD_MINOR__=0` for NDK r11.
+#if defined __has_include
+#if __has_include(<android/ndk-version.h>)
+#include <android/ndk-version.h>
+#endif
+#endif
+
 #else
 #define EIGEN_OS_ANDROID 0
 #endif
@@ -964,6 +988,10 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE constexpr void ignore_unused_variable(cons
 // added then subtracted, which is otherwise compiled away with -ffast-math.
 //
 // See bug 1674
+#if defined(EIGEN_GPU_COMPILE_PHASE)
+#define EIGEN_OPTIMIZATION_BARRIER(X)
+#endif
+
 #if !defined(EIGEN_OPTIMIZATION_BARRIER)
 #if EIGEN_COMP_GNUC
    // According to https://gcc.gnu.org/onlinedocs/gcc/Constraints.html:
@@ -1072,14 +1100,7 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE constexpr void ignore_unused_variable(cons
 #define EIGEN_USING_STD(FUNC) using std::FUNC;
 #endif
 
-#if EIGEN_COMP_MSVC_STRICT && EIGEN_COMP_NVCC
-// Wwhen compiling with NVCC, using the base operator is necessary,
-//   otherwise we get duplicate definition errors
-// For later MSVC versions, we require explicit operator= definition, otherwise we get
-//   use of implicitly deleted operator errors.
-// (cf Bugs 920, 1000, 1324, 2291)
-#define EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR(Derived) using Base::operator=;
-#elif EIGEN_COMP_CLANG  // workaround clang bug (see http://forum.kde.org/viewtopic.php?f=74&t=102653)
+#if EIGEN_COMP_CLANG  // workaround clang bug (see http://forum.kde.org/viewtopic.php?f=74&t=102653)
 #define EIGEN_INHERIT_ASSIGNMENT_EQUAL_OPERATOR(Derived)                                           \
   using Base::operator=;                                                                           \
   EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Derived& operator=(const Derived& other) {                 \

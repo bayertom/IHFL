@@ -189,10 +189,10 @@ double IHFL::ani(const double l1a, const double l2a, const double l3a, const dou
 double IHFL::cur(const double l1a, const double l2a, const double l3a, const double l1b, const double l2b, const double l3b)
 {
 	//Compute curvature change
-	const double cura = l3a / (l1a + l2a + l3a);
-	const double curb = l3b / (l1b + l2b + l3b);
+	const double curva = l3a / (l1a + l2a + l3a);
+	const double curvb = l3b / (l1b + l2b + l3b);
 
-	return fabs(cura - curb);
+	return fabs(curva - curvb);
 }
 
 
@@ -260,6 +260,23 @@ double IHFL::nEll(const Point3D& a, const Point3D& b, const RegressionPlane& pa,
 }
 
 
+double IHFL::nGeo(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+{
+	//Geographic distance by prof Sykora
+	const double dab = nL2(a, b, pa, pb);
+
+	//Identical points
+	if (dab < std::numeric_limits<float>::min())
+		return 0;
+
+	//Constrained pseudometric
+	if (dab < lambda)
+		return 0.0;
+	else
+		return dab - lambda;
+}
+
+
 double IHFL::nABN(const Point3D& a, const Point3D& b, const RegressionPlane & pa, const RegressionPlane & pb)
 {
 	//Pseudometric: Angle between normals (ABN), tangent model, g1
@@ -276,7 +293,7 @@ double IHFL::nABN(const Point3D& a, const Point3D& b, const RegressionPlane & pa
 	if (dab < lambda)
 		return (mju * dabn + (1 - mju) * dab);
 	else
-		return (mju * dabn + (1 - mju) * dab) + mju * (dab - lambda, l);
+		return (mju * dabn + (1 - mju) * dab) + mju * pow(dab - lambda, l);
 }
 
 
@@ -719,7 +736,7 @@ void IHFL::recomputeFacilityCosts(const double fc, double rat, const TVector <Re
 		}
 
 		//DFP + L1 + L2 + ...
-		else if (fnorm == &IHFL::nDFP || fnorm == &IHFL::nL2 || fnorm == &IHFL::nL1 || fnorm == &IHFL::nL22 || fnorm == &IHFL::nEll)
+		else if (fnorm == &IHFL::nDFP  || fnorm == &IHFL::nL2 || fnorm == &IHFL::nL1 || fnorm == &IHFL::nL22 || fnorm == &IHFL::nEll)
 		{
 			U[i].fc = std::max(std::min((fc / (RP[i].height + eps)) * fc, rat * fc), fc / rat);
 		}

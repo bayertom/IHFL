@@ -69,14 +69,14 @@ void SplitDataset::splitPointCloudMedian(const TVector <Point3D>& P, const doubl
 
 
 
-void SplitDataset::createKDPointTiles(const std::string& file_name, const int n_max, const double fc, const double mul, TVector <std::string>& file_names)
+void SplitDataset::createKDPointTiles(const std::string& file_name, const int n_max, const double fc, const double mul, const bool non_uniform_cl, TVector <std::string>& file_names)
 {
 	//Create subsets from the input point cloud divided in median
 	TVector <Point3D> U;
 	
-	//Load entire point cloud
+	//Load entire point cloud and change the facility costs
 	std::cout << ">> Loading point cloud: ";
-	IO::loadPointCloud(file_name, U, fc, mul);
+	IO::loadPointCloud(file_name, U, fc, mul, non_uniform_cl);
 	std::cout << "OK \n";
 
 	std::cout << ">> Partition to subsets: ";

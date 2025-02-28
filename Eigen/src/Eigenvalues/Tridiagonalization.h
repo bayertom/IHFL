@@ -379,6 +379,8 @@ struct tridiagonalization_inplace_selector;
  *    decomposition.
  * \param[out]  subdiag  The subdiagonal of the tridiagonal matrix T in
  *    the decomposition.
+ * \param[out]  hcoeffs
+ * \param[out]  workspace
  * \param[in]  extractQ  If true, the orthogonal matrix Q in the
  *    decomposition is computed and stored in \p mat.
  *
@@ -445,8 +447,8 @@ struct tridiagonalization_inplace_selector<MatrixType, 3, false> {
   typedef typename MatrixType::RealScalar RealScalar;
 
   template <typename DiagonalType, typename SubDiagonalType, typename CoeffVectorType, typename WorkSpaceType>
-  static void run(MatrixType& mat, DiagonalType& diag, SubDiagonalType& subdiag, CoeffVectorType&, WorkSpaceType&,
-                  bool extractQ) {
+  static EIGEN_DEVICE_FUNC void run(MatrixType& mat, DiagonalType& diag, SubDiagonalType& subdiag, CoeffVectorType&,
+                                    WorkSpaceType&, bool extractQ) {
     using std::sqrt;
     const RealScalar tol = (std::numeric_limits<RealScalar>::min)();
     diag[0] = mat(0, 0);

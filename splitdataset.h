@@ -30,7 +30,7 @@
 class SplitDataset
 {
 	public:
-		static void createKDPointTiles(const std::string& file_name, const int n_max, const double fc, const double mul, TVector <std::string>& file_names);
+		static void createKDPointTiles(const std::string& file_name, const int n_max, const double fc, const double mul, const bool non_uniform_cl, TVector <std::string>& file_names);
 		
 		static void loadKDPointTileFileNames(const std::string& file_name, TVector<std::string>& file_name_point_tiles);
 		static void saveKDPointTileFileNames(const std::string& file_name, const TVector<std::string>& file_name_point_tiles);

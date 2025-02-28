@@ -151,7 +151,9 @@
     <ClCompile Include="knnsearch.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pca.cpp" />
+    <ClCompile Include="rg_main.cpp" />
     <ClCompile Include="regressionplane.cpp" />
+    <ClCompile Include="rg.cpp" />
     <ClCompile Include="splitdataset.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -168,6 +170,7 @@
     <ClInclude Include="pfnorm.h" />
     <ClInclude Include="point3d.h" />
     <ClInclude Include="regressionplane.h" />
+    <ClInclude Include="rg.h" />
     <ClInclude Include="sortpoints3dbyx.h" />
     <ClInclude Include="sortpoints3dbyy.h" />
     <ClInclude Include="sortpoints3dbyz.h" />

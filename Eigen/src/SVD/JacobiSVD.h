@@ -547,6 +547,8 @@ class JacobiSVD : public SVDBase<JacobiSVD<MatrixType_, Options_> > {
    * One \b cannot request unitaries using both the \a Options template parameter
    * and the constructor. If possible, prefer using the \a Options template parameter.
    *
+   * \param rows number of rows for the input matrix
+   * \param cols number of columns for the input matrix
    * \param computationOptions specify whether to compute Thin/Full unitaries U/V
    * \sa JacobiSVD()
    *
@@ -559,7 +561,7 @@ class JacobiSVD : public SVDBase<JacobiSVD<MatrixType_, Options_> > {
   }
 
   /** \brief Constructor performing the decomposition of given matrix, using the custom options specified
-   *         with the \a Options template paramter.
+   *         with the \a Options template parameter.
    *
    * \param matrix the matrix to decompose
    */
@@ -611,7 +613,6 @@ class JacobiSVD : public SVDBase<JacobiSVD<MatrixType_, Options_> > {
   using Base::rank;
   using Base::rows;
 
- private:
   void allocate(Index rows_, Index cols_, unsigned int computationOptions) {
     if (Base::allocate(rows_, cols_, computationOptions)) return;
     eigen_assert(!(ShouldComputeThinU && int(QRPreconditioner) == int(FullPivHouseholderQRPreconditioner)) &&
@@ -624,6 +625,7 @@ class JacobiSVD : public SVDBase<JacobiSVD<MatrixType_, Options_> > {
     if (rows() > cols()) m_qr_precond_morerows.allocate(*this);
   }
 
+ private:
   JacobiSVD& compute_impl(const MatrixType& matrix, unsigned int computationOptions);
 
  protected:

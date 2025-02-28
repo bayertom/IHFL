@@ -1,7 +1,7 @@
 // Description: Incremental heuristic facility location clustering of the point cloud
 // Main cpp file: read data, perform clusterization, write data
 
-// Copyright (c) 2021 - 2024
+// Copyright (c) 2021 - 2025
 // Tomas Bayer
 // Charles University in Prague, Faculty of Science
 // bayertom@natur.cuni.cz
@@ -37,11 +37,32 @@
 #include "sortpoints3dbyz.h"
 #include "sortpointsto3dbins.h"
 #include "dxfexport.h"
+//#include "rg.h"
 
 int main(int argc, char* argv[])
 {
+	/*
+	//Input data
+	std::string file_namer = "data\\Cone\\cone_10000.txt";
+
+	//Load points
+	TVector <Point3D> points;
+	IO::loadPointCloud(file_namer, points);
+
+	//Perform region growing
+	TVector2D <Point3D> regions;
+	rg::regionGrow(points, 0.1, 0.1, 30, regions);
+
+	//Edges
+	for (int i = 0; i < regions.size(); i++)
+	{
+		std::string file_name_output = "data\\Cone\\edge" + std::to_string(i) + ".txt";
+		IO::savePointCloud(file_name_output, regions[i]);
+	}
+	*/
+
 	std::cout << "*** FACILITY LOCATION CLUSTERING WITH PSEUDO-METRICS *** \n";
-	std::cout << "***   (ver. 2.5, 8/2024, bayertom@natur.cuni.cz)    *** \n";
+	std::cout << "***   (ver. 2.6, 02/2025, bayertom@natur.cuni.cz)    *** \n";
 	//Testing data
 	//std::string file_name = "data\\test_pseudometrics.txt";
 	//std::string file_name = "data\\ETH\\eth_mid.txt";
@@ -55,14 +76,18 @@ int main(int argc, char* argv[])
 	//std::string file_name = "e:\\Tomas\\CPP\\IHFL\\data\\IK\\tree14.txt";
 	//std::string file_name = "e:\\Tomas\\CPP\\Clustering\\Clustering\\Tests\\IHFLN\\LBruha\\IHFL\\2000m\\test2.txt";
 	//std::string file_name = "e:\\Tomas\\CPP\\Clustering\\Clustering\\Tests\\IHFLN\\LBruha\\IHFLN\\10000m\\spopnz_non_unif.txt";
-	// 
+	//std::string file_name = "e:\\Tomas\\CPP\\Clustering\\Clustering\\Tests\\IHFLN\\LS\\NU\\1000\\SPOPNZ_LK2212_A_C.txt";
+	//std::string file_name = "e:\\Tomas\\CPP\\Clustering\\Clustering\\Tests\\IHFLN\\LS\\NU\\250\\SPOPNZ_PocOB_AllAdr_2212_A_C_gt_0.txt";
+
 	//Parameters of the clusterization algorithm
-	bool non_uniform_cl = false, export_dxf = false, recompute_cost = false, cluster_statistics = false;
+	bool non_uniform_cl = false, export_dxf = false, recompute_fac_cost = false, cluster_statistics = false;
 	int knn = 50, ns = 100000, l = 1;
 	double fc = 1.0, mul = 1.0, lambda = 1.0, bin = 1.0, mju = 0.95;
 	double x_scale = 1.0, y_scale = 1.0, z_scale = 1.0;
-	pfnorm fnorm = &IHFL::nABN;
-	std::string file_name, fnorm_text = "abn";
+	pfnorm fnorm = &IHFL::nL2;
+	//pfnorm fnorm = &IHFL::nABN;
+	//std::string /*/file_name,*/ fnorm_text = "abn";
+	std::string file_name, fnorm_text = "l2";
 
 	/* Testing data
 	IHFL clust(non_uniform_cl, cluster_statistics, knn, lambda, mju, l, fnorm);
@@ -104,7 +129,7 @@ int main(int argc, char* argv[])
 					//Recompute cost of clusters according to normals
 					case 'r':
 					{
-						recompute_cost = true;
+						recompute_fac_cost = true;
 						break;
 					}
 
@@ -158,6 +183,8 @@ int main(int argc, char* argv[])
 				{
 					fnorm = &IHFL::nDIS;
 					fnorm_text = "dis";
+
+					recompute_fac_cost = true;
 				}
 
 				//ABN (G2 pseudonorm)
@@ -165,6 +192,8 @@ int main(int argc, char* argv[])
 				{
 					fnorm = &IHFL::nABN;
 					fnorm_text = "abn";
+
+					recompute_fac_cost = true;
 				}
 
 				//ABLP (G3 pseudonorm)
@@ -172,6 +201,8 @@ int main(int argc, char* argv[])
 				{
 					fnorm = &IHFL::nABLP;
 					fnorm_text = "ablp";
+
+					recompute_fac_cost = true;
 				}
 
 				//DFP (G4 pseudonorm)
@@ -179,6 +210,8 @@ int main(int argc, char* argv[])
 				{
 					fnorm = &IHFL::nDFP;
 					fnorm_text = "dfp";
+
+					recompute_fac_cost = true;
 				}
 
 				//L2 norm
@@ -207,6 +240,13 @@ int main(int argc, char* argv[])
 				{
 					fnorm = &IHFL::nEll;
 					fnorm_text = "ell";
+				}
+
+				//Geographic norm
+				else if (!strcmp("geo", value))
+				{
+					fnorm = &IHFL::nGeo;
+					fnorm_text = "geo";
 				}
 
 				//Linearity pseudonorm
@@ -364,7 +404,7 @@ int main(int argc, char* argv[])
 	std::string file_list = file_name + ".list";
 
 	//Print parameters
-	std::cout << "\nParameters: unif = " << !non_uniform_cl << ", rec_cost = " << recompute_cost << ", norm = " << fnorm_text << ", f_cost = " << fc << ", mul = " << mul << ", lambda = " << lambda << ", bin = " << bin << ", l = " << l << ", mju = " << mju << ", knn = " << knn << ", n_split = " << ns << ".\n\n";
+	std::cout << "\nParameters: unif = " << !non_uniform_cl << ", rec_cost = " << recompute_fac_cost << ", norm = " << fnorm_text << ", f_cost = " << fc << ", mul = " << mul << ", lambda = " << lambda << ", bin = " << bin << ", l = " << l << ", mju = " << mju << ", knn = " << knn << ", n_split = " << ns << ".\n\n";
 
 	//Load list of kd point tiles, if they exist
 	TVector<std::string> file_name_point_tiles;
@@ -374,7 +414,7 @@ int main(int argc, char* argv[])
 	if (file_name_point_tiles.size() == 0)
 	{
 		//Split point cloud to point tiles
-		SplitDataset::createKDPointTiles(file_name, ns, fc, mul, file_name_point_tiles);
+		SplitDataset::createKDPointTiles(file_name, ns, fc, mul, non_uniform_cl, file_name_point_tiles);
 		
 		//Save file names of tiles
 		SplitDataset::saveKDPointTileFileNames(file_list, file_name_point_tiles);
@@ -396,9 +436,9 @@ int main(int argc, char* argv[])
 	TVector <Point3D> output_facilities;
 	for (const auto &f_name : file_name_point_tiles)
 	{
-		//Load KD-point tiles
+		//Load KD-point tiles, do not change facility costs
 		TVector <Point3D> kd_point_tile, output_facilities_tile;
-		IO::loadPointCloud(f_name, kd_point_tile, fc, mul);
+		IO::loadPointCloud(f_name, kd_point_tile, fc, 1, true);
 
 		//Empty file
 		if (kd_point_tile.size() == 0)
@@ -446,14 +486,13 @@ int main(int argc, char* argv[])
 			TVector2D <Facility> FG(gi.nx* gi.ny* gi.nz);
 
 			//Incremental heuristic location (IHFL)
-			IHFL clust(non_uniform_cl, recompute_cost, knn, lambda, bin, mju, l, x_scale, y_scale, z_scale, fnorm);
+			IHFL clust(non_uniform_cl, recompute_fac_cost, knn, lambda, bin, mju, l, x_scale, y_scale, z_scale, fnorm);
 			clust.clusterizeIHFL(kd_point_tile, fc, gi, FG, RP);
 
 			//Convert indexed grid of facilities (2D vector) to 1D vector
 			TVector <Facility> F;
 			for (auto fg : FG)
 				F.insert(F.end(), std::make_move_iterator(fg.begin()), std::make_move_iterator(fg.end()));
-
 
 			//Statistics
 			const double time = (clock() - begin_time) / (CLOCKS_PER_SEC);
@@ -507,7 +546,13 @@ int main(int argc, char* argv[])
 
 			//Export clusters to DXF
 			if (export_dxf)
+			{
+				std::cout << ">> Exporting to DXF: ";
+
 				DXFExport::exportClustersToDXF(dxf_file_subset, F, kd_point_tile, RP);
+
+				std::cout << "OK \n";
+			}
 
 
 			//Save facilities with assigned point

@@ -1,1 +1,0 @@
-IHFL "tree14.txt" +norm=dfp +fc=0.1 +lambda=1.00 +bin=1.00 +mju=0.99 +l=1 +knn=50 +ns=100000 -n -e
