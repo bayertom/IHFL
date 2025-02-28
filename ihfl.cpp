@@ -745,7 +745,7 @@ void IHFL::recomputeFacilityCosts(const double fc, double rat, const TVector <Re
 }
 
 
-void IHFL::getAveragePointNormal(const TVector <Point3D>& P, const TVector2D <size_t>& knn_id, TVector <RegressionPlane>& RP)
+void IHFL::getAveragePointNormal(const TVector <Point3D>& P, const TVector2D <size_t>& knn_idxs, TVector <RegressionPlane>& RP)
 {
 	//Compute average point normal using SVD decomposition, regression error and ABN
 	const int n = P.size();
@@ -753,20 +753,16 @@ void IHFL::getAveragePointNormal(const TVector <Point3D>& P, const TVector2D <si
 	std::cout << ">> SVD decomposition: ";
 	for (int i = 0; i < n; i++)
 	{
-		//Add all neighbors to the list
-		TVector <Point3D> KNN;
-		for (size_t index : knn_id[i])
-			KNN.push_back(P[index]);
-
 		//Convert nearest neighbors to matrix A
-		const int m = KNN.size();
+		const int m = knn_idxs[i].size();
 		Eigen::MatrixXd A(m, 3);
 
 		for (int j = 0; j < m; j++)
 		{
-			A(j, 0) = KNN[j].x;
-			A(j, 1) = KNN[j].y;
-			A(j, 2) = KNN[j].z;
+			const int knn_idx = knn_idxs[i][j];
+			A(j, 0) = P[knn_idx].x;
+			A(j, 1) = P[knn_idx].y;
+			A(j, 2) = P[knn_idx].z;
 		}
 
 		//Compute PCA
@@ -791,14 +787,14 @@ void IHFL::clusterizeIHFL(TVector <Point3D>&U, const double fc, const GridIndexi
 	const int n = U.size();
 
 	//Find all k-nearest neighbors
-	TVector2D <size_t> knn_id;
-	TVector2D <float> knn_dist;
+	TVector2D <size_t> knn_idxs;
+	TVector2D <float> knn_dists;
 	TVector <int> K(1, k);
 	KNNSearch search (U);
-	search.findAllKNN(U, K, knn_id, knn_dist);
+	search.findAllKNN(U, K, knn_idxs, knn_dists);
 
 	//Compute average normals, recompute facility cost
-	getAveragePointNormal(U, knn_id, RP);
+	getAveragePointNormal(U, knn_idxs, RP);
 	
 	//Recompute facility costs according to normals (replace old values)]
 	const double multiplier = 10.0;

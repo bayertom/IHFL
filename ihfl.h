@@ -117,7 +117,7 @@ class IHFL
 
 		 void updateClusters(const int i, const TVector <Point3D>& points, const TVector <RegressionPlane>& RP, const GridIndexing & gi, TVector2D <Facility >& FG);
 		 void recomputeFacilityCosts (const double fc, double rat, const TVector <RegressionPlane>& RP, const pfnorm& fnorm, TVector <Point3D>& U);
-		 void getAveragePointNormal(const TVector <Point3D>& P, const TVector2D <size_t>& knn_id, TVector <RegressionPlane>& RP);
+		 void getAveragePointNormal(const TVector <Point3D>& P, const TVector2D <size_t>& knn_idxs, TVector <RegressionPlane>& RP);
 };
 
 #endif
