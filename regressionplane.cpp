@@ -23,7 +23,7 @@
 
 void RegressionPlane::computeRegressionPlane(const Eigen::MatrixXd& A, const Eigen::MatrixXd &S, Eigen::MatrixXd &V)
 {
-	//Compute regression plane using PCA
+	//Compute regression plane using PCA, store singular values and other parameters
 
 	//Compute points centroid (mean of their coordinates represented by columns)
 	Eigen::RowVectorXd M = A.colwise().mean();

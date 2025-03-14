@@ -36,6 +36,8 @@ class DXFExport
 public:
 
         static void exportClustersToDXF(const std::string& file_name, const TVector <Facility>& F, const TVector <Point3D>& points, const TVector <RegressionPlane>& RP);
+        static void exportPolylineToDXF(const std::string& file_name, const TVector <Point3D>& polyline, const unsigned int color);
+
 
 private:
 

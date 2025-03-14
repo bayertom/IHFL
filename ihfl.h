@@ -23,10 +23,8 @@
 #ifndef IHFL_H
 #define IHFL_H
 
-#include <tuple>
-
 #include "point3d.h"
-#include "pfnorm.h"
+#include "pfclustmetric.h"
 #include "regressionplane.h"
 #include "tvector2D.h"
 #include "facility.h"
@@ -38,28 +36,28 @@
 #include <iomanip>
 
 //Incremental heuristic facility location algorithm
-//Clustering according to the given (pseudo) norm
+//Clustering according to the given (pseudo) metric stored in pf_clust_metric
 class IHFL
 {
 	private:
-		bool non_uniform_cl;		//Non-uniform clusterization (recompute cost of points according to normal vectors)
-		bool recompute_cost;		//Recompute cost of clusters according to normal vectos
-		int k;				//Amount of nearest neighbors, estimation of normal vectors
-		double  lambda,			//Radius of the ball
-			bin,			//Size of the bin of the grid (performance of the spatial indexing)
-			mju,			//Isotropic factor
-			l,			//Penalization outside the ball, power of distance differences
-			x_scale,		//Scale factor in X direction
-			y_scale,		//Scale factor in Y direction
-			z_scale;		//Scale factor in Z direction
+		bool non_uniform_cl;			//Non-uniform clusterization (recompute cost of points according to normal vectors)
+		bool recompute_cost;			//Recompute cost of clusters according to normal vectos
+		int k;					//Amount of nearest neighbors, estimation of normal vectors
+		double  lambda,				//Radius of the ball
+			bin,				//Size of the bin of the grid (performance of the spatial indexing)
+			mju,				//Isotropic factor
+			l,				//Penalization outside the ball, power of distance differences
+			x_scale,			//Scale factor in X direction
+			y_scale,			//Scale factor in Y direction
+			z_scale;			//Scale factor in Z direction
 
-		const pfnorm &fnorm;		//Reference to the (pseudo) norm
+		const pfClustMetric &pf_clust_metric;	//Reference to the (pseudo) metric used by IHFL
 
 
 	public:
 		 IHFL(const bool non_uniform_cl_, const bool recompute_cost_, const int k_, const double lambda_, const double bin_, const double mju_, const double l_, const double x_scale_, 
-			const double y_scale_, const double z_scale_, const pfnorm &fnorm_) : non_uniform_cl(non_uniform_cl_), recompute_cost(recompute_cost_), k(k_), lambda(lambda_), bin(bin_), 
-			 mju(mju_), l(l_), x_scale(x_scale_), y_scale(y_scale_), z_scale(z_scale_), fnorm(fnorm_) {}
+			const double y_scale_, const double z_scale_, const pfClustMetric & pf_clust_metric_) : non_uniform_cl(non_uniform_cl_), recompute_cost(recompute_cost_), k(k_), lambda(lambda_), bin(bin_),
+			 mju(mju_), l(l_), x_scale(x_scale_), y_scale(y_scale_), z_scale(z_scale_), pf_clust_metric(pf_clust_metric_) {}
 		
 		 void generateClusters(const double w, const double h, const double rad, const int nc, const int n, TVector <Point3D>& U);
 		 void generateCone(const double a, const double b, const int n, TVector <Point3D>& U);
@@ -71,24 +69,26 @@ class IHFL
 		     TVector <int>& NC, TVector <double>& RAD, TVector <double>& ABN, TVector <double>& DFP, TVector <double>& ASP, TVector <int>& DIM, 
 		     TVector <int>& OVER, TVector <double>& SLO);
 
-		 double nL2(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
-		 double nL1(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
-		 double nL22(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
-		 double nEll(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
-		 double nGeo(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
-		 double nDIS(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
-		 double nABN(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
-		 double nABLP(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
-		 double nDFP(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
-		 double nLIN(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
-		 double nPLA(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
-		 double nSPH(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
-		 double nOMN(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
-		 double nANI(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
-		 double nCUR(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
-		 double nENT(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
-		 double nVER(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
-		 double nHOR(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 void clientsToFacilities(const TVector <Point3D>& kd_points_tile, const TVector <Facility>& F, TVector <Point3D>& output_facilities_tile, TVector <int>& clients_to_facilities_tile);
+
+		 double mL2(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double mL1(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double mL22(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double mEll(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double pmGeo(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double pmDIS(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double pmABN(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double pmABLP(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double pmDFP(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double pmLIN(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double pmPLA(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double pmSPH(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double pmOMN(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double pmANI(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double pmCUR(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double pmENT(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double pmVER(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
+		 double pmHOR(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
 		 double computeCost(const TVector <Facility>& F, const TVector <Point3D>& points, const TVector <RegressionPlane>& RP);
 		
 	private:
@@ -116,8 +116,9 @@ class IHFL
 		 void baseCylinderPoint(const double a, const double b, double& h, double& r, double& t);
 
 		 void updateClusters(const int i, const TVector <Point3D>& points, const TVector <RegressionPlane>& RP, const GridIndexing & gi, TVector2D <Facility >& FG);
-		 void recomputeFacilityCosts (const double fc, double rat, const TVector <RegressionPlane>& RP, const pfnorm& fnorm, TVector <Point3D>& U);
+		 void recomputeFacilityCosts (const double fc, double rat, const TVector <RegressionPlane>& RP, TVector <Point3D>& U);
 		 void getAveragePointNormal(const TVector <Point3D>& P, const TVector2D <size_t>& knn_idxs, TVector <RegressionPlane>& RP);
+		 
 };
 
 #endif

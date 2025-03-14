@@ -182,6 +182,68 @@ void DXFExport::exportClustersToDXF(const std::string& file_name, const TVector 
 	}
 }
 
+void DXFExport::exportPolylineToDXF(const std::string& file_name, const TVector <Point3D>& polyline, const unsigned int color)
+{
+	//Export polyline to DXF
+	const std::string  layer_name = "Polyline";
+
+	std::ofstream file;
+
+	try
+	{
+		file.open(file_name/*, ios::out*/);
+
+		
+			//Create header section
+			createHeaderSection(file);
+
+			//Create table section
+			createTableSection(file);
+
+			//Create layer
+			createLayerSection(file, layer_name, color);
+
+			//End table header
+			endTableSection(file);
+
+			//Create entity section
+			createEntitySection(file);
+
+			//Process polyline vertex by vertex
+			const unsigned int n = polyline.size();
+
+			//Process edges
+			for (unsigned int i = 0; i < n - 1; i++)
+			{
+				// Get start point
+				const double x1 = polyline[i].x;
+				const double y1 = polyline[i].y;
+				const double z1 = polyline[i].z;
+
+				// Get end point
+				const double x2 = polyline[i + 1].x;
+				const double y2 = polyline[i + 1].y;
+				const double z2 = polyline[i + 1].z;
+
+				//Create line
+				createLine(file, layer_name, x1, y1, z1, x2, y2, z2, color);
+			}
+
+			//End header section
+			endHeaderSection(file);
+
+			//Close file
+			file.close();
+	}
+
+	//Any error has appeared
+	catch (std::ifstream::failure e)
+	{
+		std::cerr << "Exception writing DXF file\n";
+	}
+}
+
+
 
 void DXFExport::createHeaderSection(std::ofstream& file)
 {

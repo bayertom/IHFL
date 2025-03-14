@@ -40,7 +40,7 @@
 
 double IHFL::distL2(const double x1, const double y1, const double z1, const double x2, const double y2, const double z2)
 {
-	//Compute Euclidean distance
+	//Compute L2 (Euclidean) distance
 	const double dx = x2 - x1;
 	const double dy = y2 - y1;
 	const double dz = z2 - z1;
@@ -62,7 +62,7 @@ double IHFL::distL1(const double x1, const double y1, const double z1, const dou
 
 double IHFL::distL22(const double x1, const double y1, const double z1, const double x2, const double y2, const double z2)
 {
-	//Compute Euclidean distance
+	//Compute square of L2 (Euclidean) distance
 	const double dx = x2 - x1;
 	const double dy = y2 - y1;
 	const double dz = z2 - z1;
@@ -73,7 +73,7 @@ double IHFL::distL22(const double x1, const double y1, const double z1, const do
 
 double IHFL::distEll(const double x1, const double y1, const double z1, const double x2, const double y2, const double z2)
 {
-	//Compute elliptic distance distance
+	//Compute elliptic distance
 	const double dx = x_scale * (x2 - x1);
 	const double dy = y_scale * (y2 - y1);
 	const double dz = z_scale * (z2 - z1);
@@ -91,18 +91,18 @@ double IHFL::pointPlaneDist(const double qx, const double qy, const double qz, c
 
 double IHFL::abn(const RegressionPlane& pa, const RegressionPlane& pb)
 {
-	//Compute ABN criterion (Angle Between Planes)
+	//Compute ABN (Angle Between Planes)
 	const double norma = sqrt(pa.a * pa.a + pa.b * pa.b + pa.c * pa.c);
 	const double normb = sqrt(pb.a * pb.a + pb.b * pb.b + pb.c * pb.c);
 	const double dot_ab = fabs(pa.a * pb.a + pa.b * pb.b + pa.c * pb.c);
 
-	return acos(std::min(1.0, dot_ab / (norma * normb)));
+	return acos(std::max(-1.0, std::min(1.0, dot_ab / (norma * normb))));
 }
 
 
 double IHFL::ablp(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
 {
-	//Compute ABLP criterion (Angle Between Line and RegressionPlane)
+	//Compute ABLP (Angle Between Line and RegressionPlane)
 	const double ux = b.x - a.x;
 	const double uy = b.y - a.y;
 	const double uz = b.z - a.z;
@@ -126,7 +126,7 @@ double IHFL::ablp(const Point3D& a, const Point3D& b, const RegressionPlane& pa,
 
 double IHFL::dfp(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
 {
-	//Compute DFP criterion (Distance from plane)
+	//Compute DFP (Distance from plane)
 	const double dfa = pointPlaneDist(a.x, a.y, a.z, pb.a, pb.b, pb.c, pb.d);
 	const double dfb = pointPlaneDist(b.x, b.y, b.z, pa.a, pa.b, pa.c, pa.d);
 
@@ -232,38 +232,38 @@ double IHFL::hor(const RegressionPlane& pa, const RegressionPlane& pb)
 }
 
 
-double IHFL::nL2(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+double IHFL::mL2(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
 {
-	//L2 norm
+	//L2 metric
 	return distL2(a.x, a.y, a.z, b.x, b.y, b.z);
 }
 
 
-double IHFL::nL1(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+double IHFL::mL1(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
 {
-	//L2 norm
+	//L1 metric
 	return distL1(a.x, a.y, a.z, b.x, b.y, b.z);
 }
 
 
-double IHFL::nL22(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+double IHFL::mL22(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
 {
-	//L22 norm
+	//L22 metric
 	return distL22(a.x, a.y, a.z, b.x, b.y, b.z);
 }
 
 
-double IHFL::nEll(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+double IHFL::mEll(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
 {
 	//Elliptic distance
 	return distEll(a.x, a.y, a.z,  b.x, b.y, a.z);
 }
 
 
-double IHFL::nGeo(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+double IHFL::pmGeo(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
 {
-	//Geographic distance by prof Sykora
-	const double dab = nL2(a, b, pa, pb);
+	//Geographic pseudometric by prof Sykora
+	const double dab = mL2(a, b, pa, pb);
 
 	//Identical points
 	if (dab < std::numeric_limits<float>::min())
@@ -277,10 +277,10 @@ double IHFL::nGeo(const Point3D& a, const Point3D& b, const RegressionPlane& pa,
 }
 
 
-double IHFL::nABN(const Point3D& a, const Point3D& b, const RegressionPlane & pa, const RegressionPlane & pb)
+double IHFL::pmABN(const Point3D& a, const Point3D& b, const RegressionPlane & pa, const RegressionPlane & pb)
 {
 	//Pseudometric: Angle between normals (ABN), tangent model, g1
-	const double dab = nL2(a, b, pa, pb);
+	const double dab = mL2(a, b, pa, pb);
 
 	//Identical points
 	if (dab < std::numeric_limits<float>::min())
@@ -297,10 +297,10 @@ double IHFL::nABN(const Point3D& a, const Point3D& b, const RegressionPlane & pa
 }
 
 
-double IHFL::nDIS(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+double IHFL::pmDIS(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
 {
 	//Pseudometric: Euclidean distance between p and tangent plane, tangent model (g2)
-	const double dab = nL2(a, b, pa, pb);
+	const double dab = mL2(a, b, pa, pb);
 
 	//Identical points
 	if (dab < std::numeric_limits<float>::min())
@@ -318,10 +318,10 @@ double IHFL::nDIS(const Point3D& a, const Point3D& b, const RegressionPlane& pa,
 }
 
 
-double IHFL::nABLP(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+double IHFL::pmABLP(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
 {
 	//Pseudometric: Angle between line and planes, secant model (g3)
-	const double dab = nL2(a, b, pa, pb);
+	const double dab = mL2(a, b, pa, pb);
 
 	//Identical points
 	if (dab < std::numeric_limits<float>::min())
@@ -338,10 +338,10 @@ double IHFL::nABLP(const Point3D& a, const Point3D& b, const RegressionPlane& pa
 }
 
 
-double IHFL::nDFP(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+double IHFL::pmDFP(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
 {
 	//Pseudometric: Distance from plane (DFP), secant model (g4)
-	const double dab = nL2(a, b, pa, pb);
+	const double dab = mL2(a, b, pa, pb);
 
 	//Identical points
 	if (dab < std::numeric_limits<float>::min())
@@ -358,10 +358,10 @@ double IHFL::nDFP(const Point3D& a, const Point3D& b, const RegressionPlane& pa,
 }
 
 
-double IHFL::nLIN(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+double IHFL::pmLIN(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
 {
 	//Pseudometric: Linearity
-	const double dab = nL2(a, b, pa, pb);
+	const double dab = mL2(a, b, pa, pb);
 
 	//Identical points
 	if (dab < std::numeric_limits<float>::min())
@@ -378,10 +378,10 @@ double IHFL::nLIN(const Point3D& a, const Point3D& b, const RegressionPlane& pa,
 }
 
 
-double IHFL::nPLA(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+double IHFL::pmPLA(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
 {
 	//Pseudometric: Planarity
-	const double dab = nL2(a, b, pa, pb);
+	const double dab = mL2(a, b, pa, pb);
 
 	//Identical points
 	if (dab < std::numeric_limits<float>::min())
@@ -398,10 +398,10 @@ double IHFL::nPLA(const Point3D& a, const Point3D& b, const RegressionPlane& pa,
 }
 
 
-double IHFL::nSPH(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+double IHFL::pmSPH(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
 {
 	//Pseudometric: Sphericity
-	const double dab = nL2(a, b, pa, pb);
+	const double dab = mL2(a, b, pa, pb);
 
 	//Identical points
 	if (dab < std::numeric_limits<float>::min())
@@ -418,10 +418,10 @@ double IHFL::nSPH(const Point3D& a, const Point3D& b, const RegressionPlane& pa,
 }
 
 
-double IHFL::nOMN(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+double IHFL::pmOMN(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
 {
 	//Pseudometric: Omnivariance
-	const double dab = nL2(a, b, pa, pb);
+	const double dab = mL2(a, b, pa, pb);
 
 	//Identical points
 	if (dab < std::numeric_limits<float>::min())
@@ -438,10 +438,10 @@ double IHFL::nOMN(const Point3D& a, const Point3D& b, const RegressionPlane& pa,
 }
 
 
-double IHFL::nANI(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+double IHFL::pmANI(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
 {
 	//Pseudometric: Anisotropy
-	const double dab = nL2(a, b, pa, pb);
+	const double dab = mL2(a, b, pa, pb);
 
 	//Identical points
 	if (dab < std::numeric_limits<float>::min())
@@ -458,10 +458,10 @@ double IHFL::nANI(const Point3D& a, const Point3D& b, const RegressionPlane& pa,
 }
 
 
-double IHFL::nCUR(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+double IHFL::pmCUR(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
 {
 	//Pseudometric: Curvature change
-	const double dab = nL2(a, b, pa, pb);
+	const double dab = mL2(a, b, pa, pb);
 
 	//Identical points
 	if (dab < std::numeric_limits<float>::min())
@@ -478,10 +478,10 @@ double IHFL::nCUR(const Point3D& a, const Point3D& b, const RegressionPlane& pa,
 }
 
 
-double IHFL::nENT(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+double IHFL::pmENT(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
 {
 	//Pseudometric: Eigen entropy
-	const double dab = nL2(a, b, pa, pb);
+	const double dab = mL2(a, b, pa, pb);
 
 	//Identical points
 	if (dab < std::numeric_limits<float>::min())
@@ -498,10 +498,10 @@ double IHFL::nENT(const Point3D& a, const Point3D& b, const RegressionPlane& pa,
 }
 
 
-double IHFL::nVER(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+double IHFL::pmVER(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
 {
 	//Pseudometric: verticality
-	const double dab = nL2(a, b, pa, pb);
+	const double dab = mL2(a, b, pa, pb);
 
 	//Identical points
 	if (dab < std::numeric_limits<float>::min())
@@ -518,10 +518,10 @@ double IHFL::nVER(const Point3D& a, const Point3D& b, const RegressionPlane& pa,
 }
 
 
-double IHFL::nHOR(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
+double IHFL::pmHOR(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb)
 {
 	//Pseudometric: horizontality
-	const double dab = nL2(a, b, pa, pb);
+	const double dab = mL2(a, b, pa, pb);
 
 	//Identical points
 	if (dab < std::numeric_limits<float>::min())
@@ -719,7 +719,7 @@ void IHFL::generateCube(const double a, const int n, TVector <Point3D>& U)
 }
 
 
-void IHFL::recomputeFacilityCosts(const double fc, double rat, const TVector <RegressionPlane>& RP, const pfnorm& fnorm, TVector <Point3D> &U)
+void IHFL::recomputeFacilityCosts(const double fc, double rat, const TVector <RegressionPlane>& RP, TVector <Point3D> &U)
 {
 	//Recompute facility cost according to the normals for non-uniform clustering
 	const double eps = 0.0001;
@@ -728,15 +728,15 @@ void IHFL::recomputeFacilityCosts(const double fc, double rat, const TVector <Re
 	for (int i = 0; i < U.size(); i++)
 	{
 		//Pseudometrics
-		if (fnorm == &IHFL::nDIS || fnorm == &IHFL::nABN || fnorm == &IHFL::nABLP || fnorm == &IHFL::nLIN || fnorm == &IHFL::nPLA ||
-				fnorm == &IHFL::nSPH || fnorm == &IHFL::nOMN || fnorm == &IHFL::nANI || fnorm == &IHFL::nCUR || fnorm == &IHFL::nVER)
+		if (pf_clust_metric == &IHFL::pmDIS || pf_clust_metric == &IHFL::pmABN || pf_clust_metric == &IHFL::pmABLP || pf_clust_metric == &IHFL::pmLIN || pf_clust_metric == &IHFL::pmPLA ||
+				pf_clust_metric == &IHFL::pmSPH || pf_clust_metric == &IHFL::pmOMN || pf_clust_metric == &IHFL::pmANI || pf_clust_metric == &IHFL::pmCUR || pf_clust_metric == &IHFL::pmVER)
 		{
 			//Compute new facility cost
 			U[i].fc = std::max(std::min((fc / (RP[i].height + eps)) * fc, rat * fc), fc / rat);
 		}
 
 		//DFP + L1 + L2 + ...
-		else if (fnorm == &IHFL::nDFP  || fnorm == &IHFL::nL2 || fnorm == &IHFL::nL1 || fnorm == &IHFL::nL22 || fnorm == &IHFL::nEll)
+		else if (pf_clust_metric == &IHFL::pmDFP  || pf_clust_metric == &IHFL::mL2 || pf_clust_metric == &IHFL::mL1 || pf_clust_metric == &IHFL::mL22 || pf_clust_metric == &IHFL::mEll)
 		{
 			U[i].fc = std::max(std::min((fc / (RP[i].height + eps)) * fc, rat * fc), fc / rat);
 		}
@@ -755,6 +755,11 @@ void IHFL::getAveragePointNormal(const TVector <Point3D>& P, const TVector2D <si
 	{
 		//Convert nearest neighbors to matrix A
 		const int m = knn_idxs[i].size();
+		double x = P[i].x;
+		double y = P[i].y;
+		if (fabs(y - 0.8760) < 0.0001)
+			std::cout << "x";
+
 		Eigen::MatrixXd A(m, 3);
 
 		for (int j = 0; j < m; j++)
@@ -782,7 +787,7 @@ void IHFL::getAveragePointNormal(const TVector <Point3D>& P, const TVector2D <si
 
 void IHFL::clusterizeIHFL(TVector <Point3D>&U, const double fc, const GridIndexing& gi, TVector2D <Facility> &FG, TVector <RegressionPlane> &RP)
 {
-	//Perform incremental heuristic facility clustering by (IHFL) according to a given norm
+	//Perform incremental heuristic facility clustering by (IHFL) according to a given metric
 	//Proposed incremental algorithms selecting one of four strategies
 	const int n = U.size();
 
@@ -802,7 +807,7 @@ void IHFL::clusterizeIHFL(TVector <Point3D>&U, const double fc, const GridIndexi
 
 	if (non_uniform_cl && recompute_cost)
 	{
-		recomputeFacilityCosts(fc, multiplier, RP, fnorm, U);
+		recomputeFacilityCosts(fc, multiplier, RP, U);
 	}
 	//Process all points
 	std::cout << ">> Clusterization: ";
@@ -866,25 +871,25 @@ void IHFL::updateClusters(const int i, const TVector <Point3D>& points, const TV
 			//Reset sign and shift
 			const int p_idx2 = abs(fac.p_idx) - 1;
 
-			//Norm and pseudonorm
-			const double dist_pf = distL2(points[i].x, points[i].y, points[i].z, points[p_idx2].x, points[p_idx2].y, points[p_idx2].z);       //Distance between point p[i] and facility
-			const double dpf = (this->*fnorm)(points[i], points[p_idx2], RP[i], RP[p_idx2]);								   //Pseudonorm between point p[i] and facility
+			//Distance and pseudodistance between point p[i] and facility
+			const double dist_pf = distL2(points[i].x, points[i].y, points[i].z, points[p_idx2].x, points[p_idx2].y, points[p_idx2].z);    
+			const double p_dist_pf = (this->*pf_clust_metric)(points[i], points[p_idx2], RP[i], RP[p_idx2]);							
 
-			//const double dist_pf = distL2( points[p_idx2].x, points[p_idx2].y, points[p_idx2].z, points[i].x, points[i].y, points[i].z);       //Distance between point p and facility
-			//const double dpf = (this->*fnorm)(points[p_idx2], points[i], RP[p_idx2], RP[i]);				//Pseudonorm between point p and facility
+			//const double dist_pf = distL2( points[p_idx2].x, points[p_idx2].y, points[p_idx2].z, points[i].x, points[i].y, points[i].z);
+			//const double p_dist_pf = (this->*pf_clust_metric)(points[p_idx2], points[i], RP[p_idx2], RP[i]);			
 
 			//Cummulated values
-			double dc_all = points[i].fc - fac.fc;										//Cost diifference: reassignment of all cluster to  p - cost for the old facility deletition
-			double dc_closer = points[i].fc - dpf;										//Cost difference: reassignment of cluster points closer to p
+			double dc_all = points[i].fc - fac.fc;			//Cost difference: reassignment of all cluster to  p - cost for the old facility deletition
+			double dc_closer = points[i].fc - p_dist_pf;		//Cost difference: reassignment of cluster points closer to p
 
 			//Reallocate only according to near facilities (closer than 2 * lambda)
 			if (dist_pf <= 1.0 * lambda) //Was 3.0 * lambda
 			{
-				//Distance point and the current facility: Strategy S1
-				if (dpf < c_nearest && dpf > 0)										//Actualize distance to the nearest facility
+				//Distance of a point and the current facility: Strategy S1
+				if (p_dist_pf < c_nearest && p_dist_pf > 0)	//Actualize distance to the nearest facility representing cost
 				{
 					//Actualize cost
-					c_nearest = dpf;
+					c_nearest = p_dist_pf;
 					
 					//Store facility ID
 					idx_fac_nearest.first = idx_fac;
@@ -897,19 +902,21 @@ void IHFL::updateClusters(const int i, const TVector <Point3D>& points, const TV
 					//Reset sign and shift of the index
 					const int u_idx2 = abs(u_idx) - 1;
 
-					//Compute pseudonorms using pointers to member functions
-					//const double dup = (this->*fnorm)(points[u_idx2], points[i], RP[u_idx2], RP[i]);		//Pseudonorm of the cluster point u to the proposed new center p[i]
-					//const double duf = (this->*fnorm)(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]);	//Pseudonorm of the cluster point u to its cluster center f.u
+					//const double p_dist_up = (this->*pf_clust_metric)(points[u_idx2], points[i], RP[u_idx2], RP[i]);		//Pseudodistance of the cluster point u to the proposed new center p[i]
+					//const double p_dist_uf = (this->*pf_clust_metric)(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]);	//Pseudodistance of the cluster point u to its cluster center f.u
 
-					const double dup = (this->*fnorm)(points[i], points[u_idx2], RP[i], RP[u_idx2]);		//Pseudonorm of the cluster point u to the proposed new center p[i]
-					const double duf = (this->*fnorm)(points[p_idx2], points[u_idx2], RP[p_idx2], RP[u_idx2]);	//Pseudonorm of the cluster point u to its cluster center f.u
+					//Pseudodistance of the cluster point u to the proposed new center p[i]
+					const double p_dist_up = (this->*pf_clust_metric)(points[i], points[u_idx2], RP[i], RP[u_idx2]);
+					
+					//Pseudodistance of the cluster point u to its facility (cluster) center f.u
+					const double p_dist_uf = (this->*pf_clust_metric)(points[p_idx2], points[u_idx2], RP[p_idx2], RP[u_idx2]);	//Pseudodistance of the cluster point u to its cluster center f.u
 
 					//Current facility point u is closer to p: cost for the reassignment u to the new center p
 					//Strategy S4, compute new cost increment
-					if (dup < duf)
+					if (p_dist_up < p_dist_uf)
 					{
 						//Cost difference
-						dc_closer += dup - duf;
+						dc_closer += p_dist_up - p_dist_uf;
 
 						//Change sign to plus (reallocate to p)
 						u_idx = abs(u_idx2) + 1;
@@ -921,7 +928,7 @@ void IHFL::updateClusters(const int i, const TVector <Point3D>& points, const TV
 
 					//Cost for the reassignment of any facility point to p
 					//Strategy S3
-					dc_all += dup - duf;
+					dc_all += p_dist_up - p_dist_uf;
 				}
 
 				//Entire facility is reallocated to p: does the newly created cluster at p decrease the cost?
@@ -929,7 +936,7 @@ void IHFL::updateClusters(const int i, const TVector <Point3D>& points, const TV
 				if (dc_all < dc_closer)
 				{
 					//Cost difference
-					c_reallocate_facilities = c_reallocate_facilities + dc_all - points[i].fc + dpf;			//Expected cost increment
+					c_reallocate_facilities = c_reallocate_facilities + dc_all - points[i].fc + p_dist_pf;			//Expected cost increment
 
 					//Change facility ID to plus
 					fac.p_idx = abs(fac.p_idx);
@@ -943,7 +950,7 @@ void IHFL::updateClusters(const int i, const TVector <Point3D>& points, const TV
 				else if (dc_closer < dc_all)
 				{
 					//Cost difference
-					c_reallocate_facilities = c_reallocate_facilities + dc_closer - points[i].fc + dpf;			//Expected cost increment
+					c_reallocate_facilities = c_reallocate_facilities + dc_closer - points[i].fc + p_dist_pf;			//Expected cost increment
 
 					//Change facility ID to minus
 					fac.p_idx = -abs(fac.p_idx);
@@ -1039,7 +1046,7 @@ double IHFL::computeCost(const TVector <Facility>& F, const TVector <Point3D> &p
 		for (const auto c_id : f.U_idxs)
 		{
 			const int c_id2 = fabs(c_id) - 1;
-			total_cost += (this->*fnorm)(points[p_idx2], points[c_id2], AN[p_idx2], AN[c_id2]);
+			total_cost += (this->*pf_clust_metric)(points[p_idx2], points[c_id2], AN[p_idx2], AN[c_id2]);
 		}
 	}
 
@@ -1074,10 +1081,10 @@ void IHFL::clusterStatistics(const TVector <Point3D>& points, const TVector2D <F
 				M(i, 1) = points[u_idx2].y;
 				M(i, 2) = points[u_idx2].z;
 
-				//Compute pseudonorms
-				f_radius = std::max(nL2(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]), f_radius);
-				f_abn += nABN(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]);
-				f_dfp += nDFP(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]);
+				//Compute pseudometrics
+				f_radius = std::max(mL2(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]), f_radius);
+				f_abn += pmABN(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]);
+				f_dfp += pmDFP(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]);
 
 				i++;
 			}
@@ -1155,7 +1162,7 @@ void IHFL::clusterStatistics(const TVector <Point3D>& points, const TVector2D <F
 							const int u_idx2 = abs(f2.U_idxs[k]) - 1;
 
 							//Measure distance between the facility and a client
-							const double d = nL2(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]);
+							const double d = mL2(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]);
 
 							//Increment overlap ratio
 							if (d < f_radius)
@@ -1179,5 +1186,31 @@ void IHFL::clusterStatistics(const TVector <Point3D>& points, const TVector2D <F
 			SLO.push_back(f_slope);
 			OVER.push_back(f_over);
 		}
+	}
+}
+
+
+void IHFL::clientsToFacilities(const TVector <Point3D> &kd_points_tile, const TVector <Facility>& F, TVector <Point3D> &output_facilities_tile, TVector <int>& clients_to_facilities_tile)
+{
+	//Assign clients to facilities
+	for (int i = 0; i < F.size(); i++)
+	{
+		//Get point id
+		const int p_idx2 = abs(F[i].p_idx) - 1;
+
+		//Add facility to the list
+		output_facilities_tile.push_back(kd_points_tile[p_idx2]);
+
+		//Browse all clients connected to the facility
+		for (int u_idx : F[i].U_idxs)
+		{
+			//Get client ID
+			const int u_idx2 = abs(u_idx) - 1;
+
+			//Asign client to the facility
+			clients_to_facilities_tile[u_idx2] = p_idx2;
+		}
+
+		//std::cout << '\n';
 	}
 }

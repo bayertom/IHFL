@@ -167,8 +167,10 @@
     <ClInclude Include="knnsearch.h" />
     <ClInclude Include="nanoflann.hpp" />
     <ClInclude Include="pca.h" />
-    <ClInclude Include="pfnorm.h" />
+    <ClInclude Include="pfclustmetric.h" />
+    <ClInclude Include="pfregionmetric.h" />
     <ClInclude Include="point3d.h" />
+    <ClInclude Include="region.h" />
     <ClInclude Include="regressionplane.h" />
     <ClInclude Include="rg.h" />
     <ClInclude Include="sortpoints3dbyx.h" />

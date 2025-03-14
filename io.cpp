@@ -182,9 +182,60 @@ void IO::savePointCloudAndStatistics(const std::string& file_name, const TVector
 	}
 }
 
+void IO::saveFacilitesAndClients(const std::string& file_name, const TVector <Facility>& F)
+{
+	//Save facilities and assigned clients
+	std::string line;
+	std::ofstream file;
+
+	try
+	{
+		//Open file
+		file.open(file_name);
+
+		file << std::fixed;
+
+		//Process all facilities
+		for (auto f : F)
+		{
+
+			//Get point id
+			const int p_idx2 = abs(f.p_idx) - 1;
+
+			//Write facility
+			file << p_idx2 << ":\n";
+
+			//Write its clients
+			if (f.U_idxs.size() > 0)
+			{
+				for (auto u_idx : f.U_idxs)
+				{
+					//Get client ID
+					const int u_idx2 = abs(u_idx) - 1;
+					
+					//Write client
+					file << u_idx2 << " ";
+				}
+
+				file << '\n';
+			}
+
+			file << '\n';
+		}
+
+		file.close();
+	}
+
+	//Throw exception
+	catch (std::ostream::failure e)
+	{
+		std::cerr << "Can not write the file> :" << file_name << '\n';
+	}
+}
 
 void IO::saveClientsToFacilites(const std::string& file_name, const TVector <int>& CL)
 {
+	//Assign client to a given facility
 	std::string line;
 	std::ofstream file;
 
