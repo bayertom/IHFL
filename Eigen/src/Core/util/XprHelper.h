@@ -885,8 +885,12 @@ struct scalar_div_cost {
 };
 
 template <typename T, bool Vectorized>
-struct scalar_div_cost<std::complex<T>, Vectorized> {
-  enum { value = 2 * scalar_div_cost<T>::value + 6 * NumTraits<T>::MulCost + 3 * NumTraits<T>::AddCost };
+struct scalar_div_cost<T, Vectorized, std::enable_if_t<NumTraits<T>::IsComplex>> {
+  using RealScalar = typename NumTraits<T>::Real;
+  enum {
+    value =
+        2 * scalar_div_cost<RealScalar>::value + 6 * NumTraits<RealScalar>::MulCost + 3 * NumTraits<RealScalar>::AddCost
+  };
 };
 
 template <bool Vectorized>
@@ -991,6 +995,27 @@ struct is_matrix_base_xpr : std::is_base_of<MatrixBase<remove_all_t<XprType>>, r
 
 template <typename XprType>
 struct is_permutation_base_xpr : std::is_base_of<PermutationBase<remove_all_t<XprType>>, remove_all_t<XprType>> {};
+
+/*---------------- load/store segment support ----------------*/
+
+// recursively traverse unary, binary, and ternary expressions to determine if packet segments are supported
+
+template <typename Func, typename Xpr>
+struct enable_packet_segment<CwiseNullaryOp<Func, Xpr>> : enable_packet_segment<remove_all_t<Xpr>> {};
+
+template <typename Func, typename Xpr>
+struct enable_packet_segment<CwiseUnaryOp<Func, Xpr>> : enable_packet_segment<remove_all_t<Xpr>> {};
+
+template <typename Func, typename LhsXpr, typename RhsXpr>
+struct enable_packet_segment<CwiseBinaryOp<Func, LhsXpr, RhsXpr>>
+    : bool_constant<enable_packet_segment<remove_all_t<LhsXpr>>::value &&
+                    enable_packet_segment<remove_all_t<RhsXpr>>::value> {};
+
+template <typename Func, typename LhsXpr, typename MidXpr, typename RhsXpr>
+struct enable_packet_segment<CwiseTernaryOp<Func, LhsXpr, MidXpr, RhsXpr>>
+    : bool_constant<enable_packet_segment<remove_all_t<LhsXpr>>::value &&
+                    enable_packet_segment<remove_all_t<MidXpr>>::value &&
+                    enable_packet_segment<remove_all_t<RhsXpr>>::value> {};
 
 }  // end namespace internal
 

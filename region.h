@@ -53,6 +53,20 @@ struct Region
 			//Add point to the region
 			points_idx.push_back(point_idx);
 		}
+
+		void clear()
+		{
+			//Clear region and reset its properties
+			curv_aver = 0.0;
+			tx_aver = 0.0;
+			ty_aver = 0.0;
+			tz_aver = 0.0;
+			nx_aver = 0.0;
+			ny_aver = 0.0;
+			nz_aver = 0.0;
+
+			points_idx.clear();
+		}
 };
 
 #endif

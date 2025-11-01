@@ -243,7 +243,10 @@ class FullPivLU : public SolverBase<FullPivLU<MatrixType_, PermutationIndex_> > 
       the LU decomposition.
     */
   inline RealScalar rcond() const {
-    eigen_assert(m_isInitialized && "PartialPivLU is not initialized.");
+    eigen_assert(m_isInitialized && "FullPivLU is not initialized.");
+    if (!isInvertible()) {
+      return RealScalar(0);
+    }
     return internal::rcond_estimate_helper(m_l1_norm, *this);
   }
 
@@ -714,7 +717,7 @@ void FullPivLU<MatrixType_, PermutationIndex_>::_solve_impl(const RhsType& rhs, 
 
   // Step 2
   m_lu.topLeftCorner(smalldim, smalldim).template triangularView<UnitLower>().solveInPlace(c.topRows(smalldim));
-  if (rows > cols) c.bottomRows(rows - cols) -= m_lu.bottomRows(rows - cols) * c.topRows(cols);
+  if (rows > cols) c.bottomRows(rows - cols).noalias() -= m_lu.bottomRows(rows - cols) * c.topRows(cols);
 
   // Step 3
   m_lu.topLeftCorner(nonzero_pivots, nonzero_pivots)

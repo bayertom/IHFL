@@ -35,10 +35,10 @@ struct RegressionPlane
 		b,	 //Plane equation, b
 		c,	 //Plane equation, c
 		d,	 //Plane equation, d
-		height,	 //Height of the  min-max box
-		lambda1, //Eigen value 1
-		lambda2, //Eigen value 2
-		lambda3; //Eigen value 3
+		height,	 //Height of the PCA min-max box over the points
+		lambda1, //Eigenvalue 1
+		lambda2, //Eigenvalue 2
+		lambda3; //Eigenvalue 3
 
 	RegressionPlane() : a(1.0), b(0.0), c(0.0), d(0.0), height(0.0), lambda1(1.0), lambda2(0.0), lambda3(0.0) {}
 

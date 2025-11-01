@@ -34,18 +34,23 @@
 class RG
 {
 	public:
-		static void regionGrow( TVector <Point3D>& points, const pfRegionMetric& pf_edge_metric, const TVector<double>& edge_thresholds, const int k, TVector2D <Point3D>& regions_points);
-		static void regionGrowDyn(TVector <Point3D>& points, const pfRegionMetric& pf_edge_metric, const TVector<double>& edge_thresholds, const int k, TVector2D <Point3D>& regions_points);
+		static TVector2D <Point3D> regionGrow(const TVector <Point3D>& edge_points, const TVector2D <double>& edge_points_features, const pfRegionMetric& pf_region_metric, const TVector<double>& edge_thresholds, const int k = 50, const int min_points = 10);
+		static TVector2D <Point3D> regionGrowDyn(const TVector <Point3D>& edge_points, const TVector2D <double>& edge_points_features, const pfRegionMetric& pf_region_metric, const TVector<double>& edge_thresholds, const int k = 50, const int min_points = 10);
 		static bool inSameRegion(const TVector <double>& p1_vals, const TVector <double>& p2_vals, const TVector <double>& edge_thresholds);
-	
+		static bool inSameRegion2(const Region &r, const Point3D &p, const TVector <double>& p_vals, const TVector <Point3D> &points, const TVector <double>& edge_thresholds);
+		static std::tuple<TVector<Point3D>, TVector2D<double>> findEdgePointsCurv(const TVector <Point3D>& points, const int k, const double threshold);
+		           
 private:
-		static TVector2D <double> computeFeatures(const TVector <Point3D>& points, const TVector2D <size_t>& knn_idxs);
-		static TVector <bool> findEdgePointsCurv(const TVector2D <double>& features, const double threshold);
+		static TVector2D <double> computePointFeatures(const TVector <Point3D>& points, const TVector2D <size_t>& knn_idxs);
+
 		static double get2VectorsAngle(const double ux, const double uy, const double uz, const double vx, const double vy, const double vz);
 		static Region mergeRegions(Region& r1, const Region& r2);
+		static void mergeRegions2(Region& r1, const Region& r2);
 		static std::tuple<double, double, double> measureSimilarity(const double curv1, const double tx1, const double ty1, const double tz1, const double nx1, const double ny1, const double nz1, const double curv2, const double tx2, const double ty2, const double tz2, const double nx2, const double ny2, const double nz2);
+		static std::tuple<double, double, double, double> measureSimilarity2(const Region& r, const Point3D& p, const TVector <double> & p_vals, const TVector <Point3D>& points);
 		static double getHausdorffDist(const Region& r1, const Region& r2, const TVector <Point3D>& points);
 		static double hausdorffDist(const TVector <int>& idxs1, const TVector <int>& idxs2, const TVector <Point3D>& points);
+		static double minDist(const TVector <int>& idxs, const Point3D &p, const TVector <Point3D>& points);
 
 };
 

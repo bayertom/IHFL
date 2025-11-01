@@ -37,11 +37,13 @@ void RegressionPlane::computeRegressionPlane(const Eigen::MatrixXd& A, const Eig
 	Eigen::MatrixXd AT = A * V;
 
 	//Compute extreme values of rotated coordinates
-	Eigen::MatrixXd MAX = AT.colwise().maxCoeff();
-	Eigen::MatrixXd MIN = AT.colwise().minCoeff();
+	Eigen::MatrixXd C_MAX = AT.colwise().maxCoeff();
+	Eigen::MatrixXd C_MIN = AT.colwise().minCoeff();
 
-	//Compute height of the min-max box (difference of Z-coordinates)
-	height = MAX(0, 2) - MIN(0, 2);
+	//Compute height of the min-max box (minimum of three dimensions)
+	Eigen::MatrixXd DIFF = C_MAX - C_MIN;
+	//height = C_MAX(0, 2) - C_MIN(0, 2);
+	height = DIFF.minCoeff();
 	
 	//Compute parameters a, b, c of the regression plane (last column of V)
 	a = V(0, 2);

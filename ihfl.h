@@ -23,6 +23,11 @@
 #ifndef IHFL_H
 #define IHFL_H
 
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <map>
+
 #include "point3d.h"
 #include "pfclustmetric.h"
 #include "regressionplane.h"
@@ -30,10 +35,6 @@
 #include "facility.h"
 #include "gridindexing.h"
 
-
-#include <iostream>
-#include <fstream>
-#include <iomanip>
 
 //Incremental heuristic facility location algorithm
 //Clustering according to the given (pseudo) metric stored in pf_clust_metric
@@ -64,12 +65,16 @@ class IHFL
 		 void generateCylinder(const double a, const double b, const int n, TVector <Point3D>& U);
 		 void generateCube(const double a, const int n, TVector <Point3D>& U);
 		 
-		 void clusterizeIHFL(TVector <Point3D>& U, const double fc, const GridIndexing &gi, TVector2D <Facility> &FG, TVector <RegressionPlane> & RP);
-		 void clusterStatistics(const TVector <Point3D>& points, const TVector2D <Facility> &FG, const GridIndexing& gi, const TVector <RegressionPlane>& RP, 
-		     TVector <int>& NC, TVector <double>& RAD, TVector <double>& ABN, TVector <double>& DFP, TVector <double>& ASP, TVector <int>& DIM, 
-		     TVector <int>& OVER, TVector <double>& SLO);
+		 void clusterizeIHFL(TVector <Point3D>& U, const GridIndexing &gi, TVector2D <Facility> &FG, TVector <RegressionPlane> & RP);
 
-		 void clientsToFacilities(const TVector <Point3D>& kd_points_tile, const TVector <Facility>& F, TVector <Point3D>& output_facilities_tile, TVector <int>& clients_to_facilities_tile);
+		 //TVector2D <int> exportFacilities(const TVector <Facility>& F);
+		 
+		 TVector <int> outputFaciliesToIDXs(const TVector <Point3D>& points, const TVector2D <Facility>& FG);
+		 void clusterStatistics(const TVector <Point3D>& points, const TVector2D <Facility> &FG, const GridIndexing& gi, const TVector <RegressionPlane>& RP, TVector <int>& NC, 
+			 TVector <double>& RAD, TVector <double>& ABN, TVector <double>& DFP, TVector <double>& ASP, TVector <int>& DIM, TVector <int>& OVER, TVector <double>& SLO);
+		 
+		 TVector2D <int> facilitiesToIDXs(const TVector <Point3D>& points, const TVector <Facility>& F);
+		 std::map <int, int> clientsToFacilitiesIDXs(const TVector <Point3D>& kd_points_tile, const TVector <Facility>& F);
 
 		 double mL2(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
 		 double mL1(const Point3D& a, const Point3D& b, const RegressionPlane& pa, const RegressionPlane& pb);
@@ -116,7 +121,7 @@ class IHFL
 		 void baseCylinderPoint(const double a, const double b, double& h, double& r, double& t);
 
 		 void updateClusters(const int i, const TVector <Point3D>& points, const TVector <RegressionPlane>& RP, const GridIndexing & gi, TVector2D <Facility >& FG);
-		 void recomputeFacilityCosts (const double fc, double rat, const TVector <RegressionPlane>& RP, TVector <Point3D>& U);
+		 void recomputeFacilityCostsByPCA (const TVector <RegressionPlane>& RP, TVector <Point3D>& U);
 		 void getAveragePointNormal(const TVector <Point3D>& P, const TVector2D <size_t>& knn_idxs, TVector <RegressionPlane>& RP);
 		 
 };

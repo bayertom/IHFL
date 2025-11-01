@@ -81,7 +81,7 @@ void DXFExport::exportClustersToDXF(const std::string& file_name, const TVector 
 			createPoint(file, level_points, points[i].x, points[i].y, points[i].z, color_points);
 
 			//Create point label
-			std::string point_label = std::to_string(i);
+			std::string point_label = std::to_string(points[i].id);
 			createText(file, level_texts, point_label, points[i].x + 0.5 * font_height, points[i].y - 0.5 * font_height, points[i].z, 0.0, font_height, color_texts);
 
 			//Create normal at a point

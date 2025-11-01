@@ -25,8 +25,8 @@ std::tuple<Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd> PCA::pca(const Eig
 {
 	//Compute PCA using SVD
 
-	//Compute means of coordinates
-	Eigen::RowVector3d M = A.colwise().mean();
+	//Compute means of coordinates over columns
+	Eigen::RowVectorXd M = A.colwise().mean();
 
 	//Subtract mean: B = A - M
 	Eigen::MatrixXd B = A.rowwise() - M;
@@ -37,9 +37,10 @@ std::tuple<Eigen::MatrixXd, Eigen::MatrixXd, Eigen::MatrixXd> PCA::pca(const Eig
 	//Compute SVD, full version: [U, S, V] = svd(C)
 	Eigen::JacobiSVD<Eigen::MatrixXd> svd(C, Eigen::ComputeFullV | Eigen::ComputeFullU);
 
+	//Get matrices
 	Eigen::MatrixXd U = svd.matrixU();
 	Eigen::MatrixXd S = svd.singularValues();
 	Eigen::MatrixXd V = svd.matrixV();
 
-	return { U, S, V };
+	return {U, S, V};
 }

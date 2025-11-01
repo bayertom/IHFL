@@ -27,7 +27,7 @@
 
 #include "tvector.h"
 
-void IO::loadPointCloud(const std::string& file_name, TVector <Point3D>& U, const double fc, const double mul, const bool non_uniform_cl)
+void IO::loadPointCloud(const std::string& file_name, TVector <Point3D>& U, const double fc, const double multiplier, const bool non_uniform_cl, const bool point_id_enabled)
 {
 	//Load pointcloud from the file
 	int index = 0;
@@ -56,34 +56,56 @@ void IO::loadPointCloud(const std::string& file_name, TVector <Point3D>& U, cons
 			//Add point P = [x, y, z] to the list
 			if (row.size() == 3)
 			{
-				U.push_back(Point3D(index, std::stod(row[0]), std::stod(row[1]), std::stod(row[2]), fc));
+				U.push_back(Point3D(index, std::stod(row[0]), std::stod(row[1]), std::stod(row[2]), multiplier * fc));
 			}
 
 			//Add point P = [x, y, z, fc] to the list
 			else if (row.size() == 4)
 			{
-				const double fac_cost = non_uniform_cl ? std::stod(row[3]) * mul : fc;
-				U.push_back(Point3D(index, std::stod(row[0]), std::stod(row[1]), std::stod(row[2]), fac_cost));
+				//Add point P = [id, x, y, z] to the list
+				if (point_id_enabled)
+				{ 
+					U.push_back(Point3D(std::stod(row[0]), std::stod(row[1]), std::stod(row[2]), std::stod(row[3]), multiplier * fc));
+				}
+
+				//Add point P = [x, y, z, fc] to the list
+				else
+				{
+					const double fac_cost = multiplier * (non_uniform_cl ? std::stod(row[3]) : fc);
+					U.push_back(Point3D(index, std::stod(row[0]), std::stod(row[1]), std::stod(row[2]), fac_cost));
+				}
 			}
 
 			//Add point P = [x, y, z, r, g, b] to the list
 			else if (row.size() == 6)
 			{
-				U.push_back(Point3D(index, std::stod(row[0]), std::stod(row[1]), std::stod(row[2]), fc, std::stoi(row[4]), std::stoi(row[5])));
+				U.push_back(Point3D(index, std::stod(row[0]), std::stod(row[1]), std::stod(row[2]), multiplier * fc, std::stoi(row[3]), std::stoi(row[4]), std::stoi(row[5])));
 			}
 
 			//Add point P = [x, y, z, fc, r, g, b] to the list
 			else if (row.size() == 7)
 			{
-				const double fac_cost = non_uniform_cl ? std::stod(row[3]) * mul : fc;
-				U.push_back(Point3D(index, std::stod(row[0]), std::stod(row[1]), std::stod(row[2]), fac_cost, std::stoi(row[4]), std::stoi(row[5]), std::stoi(row[6])));
+				//Add point P = [id, x, y, z, r, g, b] to the list
+				if (point_id_enabled)
+				{
+					U.push_back(Point3D(std::stod(row[0]), std::stod(row[1]), std::stod(row[2]), std::stod(row[3]), multiplier * fc, std::stoi(row[4]), std::stoi(row[5]), std::stoi(row[6])));
+
+				}
+
+				//Add point P = [x, y, z, fc, r, g, b] to the list
+				else
+				{
+					const double fac_cost = multiplier * (non_uniform_cl ? std::stod(row[3]) : fc);
+					U.push_back(Point3D(index, std::stod(row[0]), std::stod(row[1]), std::stod(row[2]), fac_cost, std::stoi(row[4]), std::stoi(row[5]), std::stoi(row[6])));
+				}
 			}
 
-			//Unknown structure
-			//Add point P = [x, y, z, r, g, b] to the list
-			else if (row.size() > 7)
+			//Add point P = [id, x, y, z, fc, r, g, b] to the list
+			else if (row.size() == 8)
 			{
-				U.push_back(Point3D(index, std::stod(row[0]), std::stod(row[1]), std::stod(row[2]), fc, std::stoi(row[4]), std::stoi(row[5])));
+				const double fac_cost = multiplier * (non_uniform_cl ? std::stod(row[4]) : fc);
+				U.push_back(Point3D(std::stod(row[0]), std::stod(row[1]), std::stod(row[2]), std::stod(row[3]), fac_cost, std::stoi(row[5]), std::stoi(row[6]), std::stoi(row[7])));
+
 			}
 			//Increment index
 			index++;
@@ -96,6 +118,7 @@ void IO::loadPointCloud(const std::string& file_name, TVector <Point3D>& U, cons
 		std::cerr << "Can not open file> :" << file_name << '\n';
 	}
 }
+
 
 void IO::savePointCloud(const std::string& file_name, const TVector <Point3D>& U)
 {
@@ -115,7 +138,7 @@ void IO::savePointCloud(const std::string& file_name, const TVector <Point3D>& U
 		{
 			//Write coordinates
 			file << std::setprecision(8);
-			file << point.x << "  " << point.y << "  " << point.z << "  " << point.fc << "  ";
+			file << point.id << "  " << point.x << "  " << point.y << "  " << point.z << "  " << point.fc << "  ";
 
 			//Write r, g, b components
 			file << std::setprecision(0);
@@ -133,9 +156,9 @@ void IO::savePointCloud(const std::string& file_name, const TVector <Point3D>& U
 }
 
 
-void IO::savePointCloudAndStatistics(const std::string& file_name, const TVector <Point3D>& U, const TVector <int>& NC, const TVector <double>& RAD, const TVector <double>& ABN, const TVector <double>& DFP, const TVector <double>& ASP, const TVector <int>& DIM, const TVector <int>& OVER, const TVector <double>& SLO)
+void IO::saveFacilitiesNoStatistics(const std::string& file_name, const TVector <Point3D>& U, const TVector <int>& ID)
 {
-	//Save point cloud to the file
+	//Save pfacilities to the file
 	std::string line;
 	std::ofstream file;
 
@@ -149,6 +172,50 @@ void IO::savePointCloudAndStatistics(const std::string& file_name, const TVector
 		//Process all points
 		for (int i = 0; i < U.size(); i++)
 		{
+			//Write point ID
+			file << std::setprecision(0);
+			file << ID[i] << "  ";
+
+			//Write coordinates
+			file << std::setprecision(8);
+			file << U[i].x << "  " << U[i].y << "  " << U[i].z << "  " << U[i].fc << "  ";
+
+			//Write r, g, b components
+			file << std::setprecision(0);
+			file << U[i].r << "  " << U[i].g << "  " << U[i].b << " ";
+		}
+
+		file.close();
+	}
+
+	//Throw exception
+	catch (std::ostream::failure e)
+	{
+		std::cerr << "Can not write the file> :" << file_name << '\n';
+	}
+}
+
+
+void IO::saveFacilitiesAndStatistics(const std::string& file_name, const TVector <Point3D>& U, const TVector <int>& ID, const TVector <int>& NC, const TVector <double>& RAD, const TVector <double>& ABN, const TVector <double>& DFP, const TVector <double>& ASP, const TVector <int>& DIM, const TVector <int>& OVER, const TVector <double>& SLO)
+{
+	//Save facilities and statistics to the file
+	std::string line;
+	std::ofstream file;
+
+	try
+	{
+		//Open file
+		file.open(file_name);
+
+		file << std::fixed;
+
+		//Process all points
+		for (int i = 0; i < U.size(); i++)
+		{
+			//Write point ID
+			file << std::setprecision(0);
+			file << ID[i] << "  ";
+
 			//Write coordinates
 			file << std::setprecision(8);
 			file << U[i].x << "  " << U[i].y << "  " << U[i].z << "  " << U[i].fc << "  ";
@@ -182,7 +249,9 @@ void IO::savePointCloudAndStatistics(const std::string& file_name, const TVector
 	}
 }
 
-void IO::saveFacilitesAndClients(const std::string& file_name, const TVector <Facility>& F)
+
+
+void IO::saveFacilitesIDXs(const std::string& file_name, const TVector2D <int> &idxs_all)
 {
 	//Save facilities and assigned clients
 	std::string line;
@@ -196,26 +265,17 @@ void IO::saveFacilitesAndClients(const std::string& file_name, const TVector <Fa
 		file << std::fixed;
 
 		//Process all facilities
-		for (auto f : F)
+		for (auto idxs_clust : idxs_all)
 		{
-
-			//Get point id
-			const int p_idx2 = abs(f.p_idx) - 1;
-
 			//Write facility
-			file << p_idx2 << ":\n";
+			file << idxs_clust[0] << ":\n";
 
-			//Write its clients
-			if (f.U_idxs.size() > 0)
+			//Are clients available?
+			if (idxs_clust.size() > 1)
 			{
-				for (auto u_idx : f.U_idxs)
-				{
-					//Get client ID
-					const int u_idx2 = abs(u_idx) - 1;
-					
-					//Write client
-					file << u_idx2 << " ";
-				}
+				//Write its clients
+				for (int i = 1; i < idxs_clust.size(); i++)
+					file << idxs_clust[i] << " ";
 
 				file << '\n';
 			}
@@ -233,7 +293,8 @@ void IO::saveFacilitesAndClients(const std::string& file_name, const TVector <Fa
 	}
 }
 
-void IO::saveClientsToFacilites(const std::string& file_name, const TVector <int>& CL)
+
+void IO::saveClientsToFacilitesIDXs(const std::string& file_name, const std::map <int, int>& idxs_all)
 {
 	//Assign client to a given facility
 	std::string line;
@@ -247,11 +308,10 @@ void IO::saveClientsToFacilites(const std::string& file_name, const TVector <int
 		file << std::fixed;
 
 		//Process all items
-		for (auto id : CL)
-			file << id << "\n";
+		for (const auto idx : idxs_all)
+			file << idx.second << "\n";
 
-		file.close();
-			
+		file.close();	
 	}
 
 	//Throw exception

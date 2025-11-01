@@ -719,29 +719,20 @@ void IHFL::generateCube(const double a, const int n, TVector <Point3D>& U)
 }
 
 
-void IHFL::recomputeFacilityCosts(const double fc, double rat, const TVector <RegressionPlane>& RP, TVector <Point3D> &U)
+void IHFL::recomputeFacilityCostsByPCA(const TVector <RegressionPlane>& RP, TVector <Point3D> &U)
 {
-	//Recompute facility cost according to the normals for non-uniform clustering
-	const double eps = 0.0001;
+	//Recompute facility cost according to the normals for non-uniform clustering given by PCA
+	const double eps = 0.0001, max_fc = 10000;
 	
-	//Change costs 
+	//Divide by the height of the PCA bounding box 
 	for (int i = 0; i < U.size(); i++)
 	{
-		//Pseudometrics
-		if (pf_clust_metric == &IHFL::pmDIS || pf_clust_metric == &IHFL::pmABN || pf_clust_metric == &IHFL::pmABLP || pf_clust_metric == &IHFL::pmLIN || pf_clust_metric == &IHFL::pmPLA ||
-				pf_clust_metric == &IHFL::pmSPH || pf_clust_metric == &IHFL::pmOMN || pf_clust_metric == &IHFL::pmANI || pf_clust_metric == &IHFL::pmCUR || pf_clust_metric == &IHFL::pmVER)
-		{
-			//Compute new facility cost
-			U[i].fc = std::max(std::min((fc / (RP[i].height + eps)) * fc, rat * fc), fc / rat);
-		}
+		//Compute ratio
+		const double ratio = U[i].fc / (RP[i].height + eps);
 
-		//DFP + L1 + L2 + ...
-		else if (pf_clust_metric == &IHFL::pmDFP  || pf_clust_metric == &IHFL::mL2 || pf_clust_metric == &IHFL::mL1 || pf_clust_metric == &IHFL::mL22 || pf_clust_metric == &IHFL::mEll)
-		{
-			U[i].fc = std::max(std::min((fc / (RP[i].height + eps)) * fc, rat * fc), fc / rat);
-		}
+		//Use square ratio
+		U[i].fc = std::min(ratio * ratio, max_fc);
 	}
-	
 }
 
 
@@ -755,11 +746,6 @@ void IHFL::getAveragePointNormal(const TVector <Point3D>& P, const TVector2D <si
 	{
 		//Convert nearest neighbors to matrix A
 		const int m = knn_idxs[i].size();
-		double x = P[i].x;
-		double y = P[i].y;
-		if (fabs(y - 0.8760) < 0.0001)
-			std::cout << "x";
-
 		Eigen::MatrixXd A(m, 3);
 
 		for (int j = 0; j < m; j++)
@@ -785,7 +771,7 @@ void IHFL::getAveragePointNormal(const TVector <Point3D>& P, const TVector2D <si
 }
 
 
-void IHFL::clusterizeIHFL(TVector <Point3D>&U, const double fc, const GridIndexing& gi, TVector2D <Facility> &FG, TVector <RegressionPlane> &RP)
+void IHFL::clusterizeIHFL(TVector <Point3D>&U,const GridIndexing& gi, TVector2D <Facility> &FG, TVector <RegressionPlane> &RP)
 {
 	//Perform incremental heuristic facility clustering by (IHFL) according to a given metric
 	//Proposed incremental algorithms selecting one of four strategies
@@ -803,17 +789,17 @@ void IHFL::clusterizeIHFL(TVector <Point3D>&U, const double fc, const GridIndexi
 	
 	//Recompute facility costs according to normals (replace old values)]
 	const double multiplier = 10.0;
-	std::cout << non_uniform_cl;
 
 	if (non_uniform_cl && recompute_cost)
 	{
-		recomputeFacilityCosts(fc, multiplier, RP, U);
+		recomputeFacilityCostsByPCA( RP, U);
 	}
+
 	//Process all points
 	std::cout << ">> Clusterization: ";
 
 	//First point becomes the facility
-	Facility f0(U[0].id + 1, U[0].fc);
+	Facility f0(1, U[0].fc);
 
 	//Compute its grid index (position in the 3D grid)
 	int idx_p = gi.get1DIndex(U[0]);
@@ -1101,13 +1087,13 @@ void IHFL::clusterStatistics(const TVector <Point3D>& points, const TVector2D <F
 				double lambda3 = S(2, 0);
 
 				//Compute cluster aspect
-				f_aspect = (lambda1 == 0 ? -1 : lambda2 / lambda1);
+				f_aspect = (fabs(lambda1) < 1.0e-6 ? -1 : lambda2 / lambda1);
 
 				//Sum of singular values
 				const double lambda_sum = lambda1 + lambda2 + lambda3;
 
 				//Cluster dimension 0
-				if (lambda_sum == 0)
+				if (fabs(lambda_sum) < 1.0e-6)
 					f_dim = 0;
 
 				//Cluster dimension: 0 - 3
@@ -1190,16 +1176,74 @@ void IHFL::clusterStatistics(const TVector <Point3D>& points, const TVector2D <F
 }
 
 
-void IHFL::clientsToFacilities(const TVector <Point3D> &kd_points_tile, const TVector <Facility>& F, TVector <Point3D> &output_facilities_tile, TVector <int>& clients_to_facilities_tile)
+TVector <int> IHFL::outputFaciliesToIDXs(const TVector <Point3D>& points, const TVector2D <Facility>& FG)
 {
-	//Assign clients to facilities
+	//Convert output faciities to indices
+	TVector <int> ID;
+
+	for (const auto& fg : FG)
+	{
+		//Process all facilities inside the grid bin
+		for (const Facility& f : fg)
+		{
+			//Reset sign and shift of the index
+			const int p_idx2 = abs(f.p_idx) - 1;
+
+			//Add to the list of point indices within the point cloud
+			ID.push_back(points[p_idx2].id);
+		}
+	}
+
+	return ID;
+}
+
+
+TVector2D <int> IHFL::facilitiesToIDXs(const TVector <Point3D>& points, const TVector <Facility>& F)
+{
+	//Convert clusters to lists
+	TVector2D <int> cloud_idxs;
+
+	for (auto f : F)
+	{
+		//Convert to the list
+		TVector <int> cluster_idxs = f.U_idxs;
+
+		//Add to the first position
+		cluster_idxs.emplace(cluster_idxs.begin(), f.p_idx);
+
+		//Process all points
+		for (int i = 0; i < cluster_idxs.size(); i++)
+		{
+			//Convert to point tile index
+			const int u_idx2 = abs(cluster_idxs[i]) - 1;
+
+			//Get point cloud tile index
+			const int ucl_id = points[u_idx2].id;
+
+			//Add to the list
+			cluster_idxs[i] = ucl_id;
+		}
+
+		//Add to the list
+		cloud_idxs.push_back(cluster_idxs);
+	}
+
+	return cloud_idxs;
+}
+
+
+std::map <int, int> IHFL::clientsToFacilitiesIDXs(const TVector <Point3D>& kd_points_tile, const TVector <Facility>& F)
+{
+	//Assign clients to facilities within a point cloud
+	std::map <int, int> clients_to_facilities_cloud;
+
 	for (int i = 0; i < F.size(); i++)
 	{
 		//Get point id
 		const int p_idx2 = abs(F[i].p_idx) - 1;
 
-		//Add facility to the list
-		output_facilities_tile.push_back(kd_points_tile[p_idx2]);
+		//Asign facility to itself
+		clients_to_facilities_cloud[kd_points_tile[p_idx2].id] = kd_points_tile[p_idx2].id;
 
 		//Browse all clients connected to the facility
 		for (int u_idx : F[i].U_idxs)
@@ -1208,9 +1252,9 @@ void IHFL::clientsToFacilities(const TVector <Point3D> &kd_points_tile, const TV
 			const int u_idx2 = abs(u_idx) - 1;
 
 			//Asign client to the facility
-			clients_to_facilities_tile[u_idx2] = p_idx2;
+			clients_to_facilities_cloud[kd_points_tile[u_idx2].id] = kd_points_tile[p_idx2].id;
 		}
-
-		//std::cout << '\n';
 	}
+
+	return clients_to_facilities_cloud;
 }
