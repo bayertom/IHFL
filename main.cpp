@@ -105,7 +105,7 @@ int main(int argc, char* argv[])
 	double fc = 0.1, mul = 1.0, lambda = 1.0, bin = 1.0, mju = 0.95;
 	double x_scale = 1.0, y_scale = 1.0, z_scale = 1.0;
 	pfClustMetric pf_clust_metric = &IHFL::mL2;
-	std::string file_name,  pf_clust_metric_text = "l2";
+	std::string file_name, pf_clust_metric_text = "l2";
 
 	//pfClustMetric pf_clust_metric = &IHFL::pmABN;
 	//std::string file_name, pf_clust_metric_text = "abn";

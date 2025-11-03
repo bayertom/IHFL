@@ -1050,7 +1050,7 @@ void IHFL::clusterStatistics(const TVector <Point3D>& points, const TVector2D <F
 		{
 			//Browse all points ui of the facility
 			int i = 0;
-			double f_radius = 0, f_abn = 0, f_dfp = 0, f_aspect = -1, f_dim = 0;
+			double f_radius = 0, f_abn = 0, f_dfp = 0, f_aspect = 1, f_dim = 0;
 
 			//Reset sign and shift of the index
 			const int p_idx2 = abs(f.p_idx) - 1;
@@ -1087,7 +1087,7 @@ void IHFL::clusterStatistics(const TVector <Point3D>& points, const TVector2D <F
 				double lambda3 = S(2, 0);
 
 				//Compute cluster aspect
-				f_aspect = (fabs(lambda1) < 1.0e-6 ? -1 : lambda2 / lambda1);
+				f_aspect = (fabs(lambda1) < 1.0e-6 ? 1 : lambda2 / lambda1);
 
 				//Sum of singular values
 				const double lambda_sum = lambda1 + lambda2 + lambda3;
@@ -1150,7 +1150,7 @@ void IHFL::clusterStatistics(const TVector <Point3D>& points, const TVector2D <F
 							//Measure distance between the facility and a client
 							const double d = mL2(points[u_idx2], points[p_idx2], RP[u_idx2], RP[p_idx2]);
 
-							//Increment overlap ratio
+							//Point closer to centroid than radius, increment overlap ratio
 							if (d < f_radius)
 								f_over += 1;
 						}
