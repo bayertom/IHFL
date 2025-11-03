@@ -1,6 +1,5 @@
-// Description: Pointer to the norm function 
-
-// Copyright (c) 2021 - 2023
+// Description: Pointer to the metric (static function) measuring if two points belong to the same region
+// Copyright (c) 2021 - 2025
 // Tomas Bayer
 // Charles University in Prague, Faculty of Science
 // bayertom@natur.cuni.cz
@@ -18,16 +17,15 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with this library. If not, see <http://www.gnu.org/licenses/>.
 
-#ifndef PFNorm_H
-#define PFNorm_H
+#ifndef PFRegionMetric_H
+#define PFRegionMetric_H
 
-#include "point3d.h"
-#include "regressionplane.h"
+#include "tvector.h"
 
 //Forward declaration
-class IHFL;
+class RG;
 
-//Pointer to the (pseudo) norm function
-typedef double (IHFL:: * pfnorm) (const Point3D&, const Point3D&, const RegressionPlane&, const RegressionPlane&);
+//Pointer to the (pseudo) metric represented by a static function measuring if two points belong to the same region (edge)
+typedef bool (*pfRegionMetric) (const TVector <double> &, const TVector <double>&, const TVector <double>&);
 
 #endif
