@@ -1,0 +1,40 @@
+﻿  ihfl.cpp
+E:\Tomas\CPP\IHFL\ihfl.cpp(742,22): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+E:\Tomas\CPP\IHFL\ihfl.cpp(742,14): warning C4267: 'initializing': conversion from 'size_t' to 'const int', possible loss of data
+E:\Tomas\CPP\IHFL\ihfl.cpp(748,33): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+E:\Tomas\CPP\IHFL\ihfl.cpp(748,15): warning C4267: 'initializing': conversion from 'size_t' to 'const int', possible loss of data
+E:\Tomas\CPP\IHFL\ihfl.cpp(753,37): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+E:\Tomas\CPP\IHFL\ihfl.cpp(753,22): warning C4267: 'initializing': conversion from 'size_t' to 'const int', possible loss of data
+E:\Tomas\CPP\IHFL\ihfl.cpp(778,22): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+E:\Tomas\CPP\IHFL\ihfl.cpp(778,14): warning C4267: 'initializing': conversion from 'size_t' to 'const int', possible loss of data
+E:\Tomas\CPP\IHFL\ihfl.cpp(1034,33): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+E:\Tomas\CPP\IHFL\ihfl.cpp(1034,20): warning C4244: 'initializing': conversion from 'double' to 'const int', possible loss of data
+E:\Tomas\CPP\IHFL\ihfl.cpp(1166,30): warning C4267: 'argument': conversion from 'size_t' to '_Ty', possible loss of data
+E:\Tomas\CPP\IHFL\ihfl.cpp(1166,30): warning C4267:         with
+E:\Tomas\CPP\IHFL\ihfl.cpp(1166,30): warning C4267:         [
+E:\Tomas\CPP\IHFL\ihfl.cpp(1166,30): warning C4267:             _Ty=int
+E:\Tomas\CPP\IHFL\ihfl.cpp(1166,30): warning C4267:         ]
+E:\Tomas\CPP\IHFL\ihfl.cpp(1171,18): warning C4244: 'argument': conversion from 'double' to '_Ty', possible loss of data
+E:\Tomas\CPP\IHFL\ihfl.cpp(1171,18): warning C4244:         with
+E:\Tomas\CPP\IHFL\ihfl.cpp(1171,18): warning C4244:         [
+E:\Tomas\CPP\IHFL\ihfl.cpp(1171,18): warning C4244:             _Ty=int
+E:\Tomas\CPP\IHFL\ihfl.cpp(1171,18): warning C4244:         ]
+E:\Tomas\CPP\IHFL\ihfl.cpp(1173,19): warning C4244: 'argument': conversion from 'double' to '_Ty', possible loss of data
+E:\Tomas\CPP\IHFL\ihfl.cpp(1173,19): warning C4244:         with
+E:\Tomas\CPP\IHFL\ihfl.cpp(1173,19): warning C4244:         [
+E:\Tomas\CPP\IHFL\ihfl.cpp(1173,19): warning C4244:             _Ty=int
+E:\Tomas\CPP\IHFL\ihfl.cpp(1173,19): warning C4244:         ]
+  main.cpp
+E:\Tomas\CPP\IHFL\main.cpp(23,9): warning C4005: '_CRT_SECURE_NO_WARNINGS': macro redefinition
+      E:\Tomas\CPP\IHFL\main.cpp(23,9):
+      '_CRT_SECURE_NO_WARNINGS' previously declared on the command line
+  
+E:\Tomas\CPP\IHFL\main.cpp(392,17): warning C4244: '=': conversion from 'const _Ty' to 'int', possible loss of data
+E:\Tomas\CPP\IHFL\main.cpp(392,17): warning C4244:         with
+E:\Tomas\CPP\IHFL\main.cpp(392,17): warning C4244:         [
+E:\Tomas\CPP\IHFL\main.cpp(392,17): warning C4244:             _Ty=double
+E:\Tomas\CPP\IHFL\main.cpp(392,17): warning C4244:         ]
+E:\Tomas\CPP\IHFL\main.cpp(459,32): warning C4267: 'initializing': conversion from 'size_t' to 'unsigned int', possible loss of data
+E:\Tomas\CPP\IHFL\main.cpp(504,137): warning C4244: 'argument': conversion from 'double' to 'const int', possible loss of data
+  Generating Code...
+  IHFL.vcxproj -> E:\Tomas\CPP\IHFL\x64\Debug\IHFL.exe
